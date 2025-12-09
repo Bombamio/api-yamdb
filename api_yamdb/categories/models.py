@@ -38,7 +38,7 @@ class Title(models.Model):
     """
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, related_name='titles',
-        verbose_name="Категория"
+        verbose_name="Категория", null=True, blank=True
     )
     genre = models.ManyToManyField(
         Genre, through='titles', verbose_name="Жанры"
@@ -59,10 +59,12 @@ class GenreTitle(models.Model):
     Класс для поля типа ManyToMany.
     """
     genre = models.ForeignKey(
-        Genre, on_delete=models.SET_NULL, verbose_name="Жанры"
+        Genre, on_delete=models.SET_NULL, verbose_name="Жанры", null=True,
+        blank=True
     )
     title = models.ForeignKey(
-        Title, on_delete=models.SET_NULL, verbose_name="Произведения"
+        Title, on_delete=models.SET_NULL, verbose_name="Произведения",
+        null=True, blank=True
     )
 
     def __str__(self):
