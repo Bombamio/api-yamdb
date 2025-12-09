@@ -10,21 +10,19 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def get_title(self):
+        '''Получаем произведение по ID из URL'''
+        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
+
     def get_queryset(self):
         '''Получаем отзывы для конкретного произведения'''
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, id=title_id)
-        return Review.objects.filter(title=title)
+        return Review.objects.filter(title=self.get_title())
 
     def perform_create(self, serializer):
-        '''Создание отзыва с автором'''
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, id=title_id)
-
-        # Используем ForeignKey author и title из моделей Ильи
+        '''Создание отзыва с автором и произведением'''
         serializer.save(
             author=self.request.user,
-            title=title
+            title=self.get_title()
         )
 
 
@@ -33,19 +31,17 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def get_review(self):
+        '''Получаем отзыв по ID из URL'''
+        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
+
     def get_queryset(self):
         '''Получаем комментарии для конкретного отзыва'''
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
-        return Comment.objects.filter(review=review)
+        return Comment.objects.filter(review=self.get_review())
 
     def perform_create(self, serializer):
         '''Создание комментария с автором'''
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
-
-        # Используем ForeignKey author из моделей Ильи
         serializer.save(
-            review=review,
-            author=self.request.user
+            author=self.request.user,
+            review=self.get_review()
         )
