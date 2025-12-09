@@ -3,12 +3,28 @@ from django.db import models
 from django.core.validators import RegexValidator
 
 
+# Константы для повторного использования
+USERNAME_PATTERN = r'^[\w.@+-]+\Z'
+
+
 class User(AbstractUser):
     '''Кастомизированная модель пользователя для YaMDb.'''
 
+    # Константы ролей
+    ROLE_USER = 'user'
+    ROLE_MODERATOR = 'moderator'
+    ROLE_ADMIN = 'admin'
+
+    ROLE_CHOICES = [
+        (ROLE_USER, 'Пользователь'),
+        (ROLE_MODERATOR, 'Модератор'),
+        (ROLE_ADMIN, 'Администратор'),
+    ]
+
     username_validator = RegexValidator(
-        regex=r'^[\w.@+-]+\Z',
-        message='Имя пользователя может содержать только буквы, цифры и @/./+/-/_'
+        regex=USERNAME_PATTERN,
+        message='Имя пользователя может содержать только буквы,'
+        'цифры и @/./+/-/_'
     )
 
     username = models.CharField(
@@ -16,32 +32,27 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
         validators=[username_validator],
-        help_text='Обязательное поле. Не более 150 символов. Только буквы, цифры и @/./+/-/_.'
+        help_text='Требуется. 150 символов или меньше.'
+        'Только буквы, цифры и @/./+/-/_.'
     )
 
     email = models.EmailField(
         'Электронная почта',
         max_length=254,
         unique=True,
-        help_text='Обязательное поле. Уникальный email.'
+        help_text='Требуется. Уникальный email.'
     )
 
     first_name = models.CharField('Имя', max_length=150, blank=True)
     last_name = models.CharField('Фамилия', max_length=150, blank=True)
     bio = models.TextField('Биография', blank=True)
 
-    ROLE_CHOICES = [
-        ('user', 'Пользователь'),
-        ('moderator', 'Модератор'),
-        ('admin', 'Администратор'),
-    ]
-
     role = models.CharField(
         'Роль',
         max_length=20,
         choices=ROLE_CHOICES,
-        default='user',
-        help_text='Роль определяет права доступа пользователя'
+        default=ROLE_USER,
+        help_text='Роль определяет права доступа'
     )
 
     confirmation_code = models.CharField(
@@ -62,8 +73,10 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == 'admin' or self.is_superuser
+        '''Проверяет, является ли пользователь администратором.'''
+        return self.role == self.ROLE_ADMIN or self.is_superuser
 
     @property
     def is_moderator(self):
-        return self.role == 'moderator'
+        '''Проверяет, является ли пользователь модератором.'''
+        return self.role == self.ROLE_MODERATOR
