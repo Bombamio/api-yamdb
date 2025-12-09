@@ -1,5 +1,4 @@
 from django.db import models
-from reviews.models import Review
 
 
 class Category(models.Model):
