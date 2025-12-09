@@ -16,6 +16,6 @@ router_v1 = routers.DefaultRouter()
 
 
 urlpatterns = [
-    path('v1/', include('djoser.urls.jwt')),
-    path('v1/', include(router_v1.urls)),
+    path('', include('djoser.urls.jwt')),
+    path('', include(router_v1.urls)),
 ]

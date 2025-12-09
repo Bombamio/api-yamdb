@@ -47,7 +47,8 @@ class Title(models.Model):
     genre = models.ManyToManyField(
         Genre,
         through='titles',
-        verbose_name="Жанры"
+        verbose_name="Жанры",
+        related_name='titles',
     )
     name = models.CharField("Название произведения", max_length=256)
     year = models.IntegerField("Год издания")
@@ -59,9 +60,6 @@ class Title(models.Model):
         help_text='Средняя оценка от 1 до 10 (рассчитывается автоматически)'
     )
 
-    class Meta:
-        ordering = ('year',)
-
     def __str__(self):
         return self.name
 
@@ -72,9 +70,9 @@ class GenreTitle(models.Model):
     """
     genre = models.ForeignKey(
         Genre,
-        on_delete=models.SET_NULL,
-        related_name='genre_titles',
-        verbose_name="Жанры",
+        on_delete=models.SET_NULL,      # Неуверен на счёт каскада, всё ведь
+        related_name='genre_titles',    # не должно удалятся при удалении
+        verbose_name="Жанры",           # 1-го элемента
         null=True,
         blank=True
     )
