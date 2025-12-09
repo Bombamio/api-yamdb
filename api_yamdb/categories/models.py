@@ -34,18 +34,30 @@ class Title(models.Model):
     Произведения, к которым пишут отзывы (определённый фильм, книга
     или песенка).
 
-    Поля: `name`, `year`, `description`, `category`, `genre`.
+    Поля: `name`, `year`, `description`, `category`, `genre`, `rating`.
     """
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, related_name='titles',
-        verbose_name="Категория", null=True, blank=True
+        Category,
+        on_delete=models.SET_NULL,
+        related_name='titles',
+        verbose_name="Категория",
+        null=True,
+        blank=True
     )
     genre = models.ManyToManyField(
-        Genre, through='titles', verbose_name="Жанры"
+        Genre,
+        through='titles',
+        verbose_name="Жанры"
     )
     name = models.CharField("Название произведения", max_length=256)
     year = models.IntegerField("Год издания")
     description = models.TextField("Описание", null=True, blank=True)
+    rating = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name='Рейтинг',
+        help_text='Средняя оценка от 1 до 10 (рассчитывается автоматически)'
+    )
 
     class Meta:
         ordering = ('year',)
@@ -59,16 +71,24 @@ class GenreTitle(models.Model):
     Класс для поля типа ManyToMany.
     """
     genre = models.ForeignKey(
-        Genre, on_delete=models.SET_NULL, verbose_name="Жанры", null=True,
+        Genre,
+        on_delete=models.SET_NULL,
+        related_name='genre_titles',
+        verbose_name="Жанры",
+        null=True,
         blank=True
     )
     title = models.ForeignKey(
-        Title, on_delete=models.SET_NULL, verbose_name="Произведения",
-        null=True, blank=True
+        Title,
+        on_delete=models.SET_NULL,
+        related_name='genre_titles',
+        verbose_name="Произведения",
+        null=True,
+        blank=True,
     )
 
     def __str__(self):
-        return f'{self.genre} {self.title}'
+        return f'{self.title.name} - {self.genre.name}'
     
     class Meta:
         # Проверка на отсутствие дублированияполей `genre` и `title`.
