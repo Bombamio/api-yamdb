@@ -46,7 +46,7 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         Genre,
-        through='titles',
+        through='GenreTitle', # Было titles код не запускается!!!
         verbose_name="Жанры",
         related_name='titles',
     )
