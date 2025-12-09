@@ -6,7 +6,7 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели User."""
+    '''Сериализатор для модели User.'''
     class Meta:
         model = User
         fields = (
@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
-    """Сериализатор для создания пользователя администратором."""
+    '''Сериализатор для создания пользователя администратором.'''
     class Meta:
         model = User
         fields = ('username', 'email', 'role')
@@ -33,7 +33,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 
 class UserSignUpSerializer(serializers.Serializer):
-    """Сериализатор для регистрации пользователя."""
+    '''Сериализатор для регистрации пользователя.'''
     email = serializers.EmailField(required=True)
     username = serializers.CharField(
         required=True,
@@ -68,6 +68,6 @@ class UserSignUpSerializer(serializers.Serializer):
 
 
 class TokenObtainSerializer(serializers.Serializer):
-    """Сериализатор для получения токена."""
+    '''Сериализатор для получения токена.'''
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
