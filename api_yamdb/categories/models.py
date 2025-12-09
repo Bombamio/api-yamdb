@@ -70,19 +70,15 @@ class GenreTitle(models.Model):
     """
     genre = models.ForeignKey(
         Genre,
-        on_delete=models.SET_NULL,      # Неуверен на счёт каскада, всё ведь
-        related_name='genre_titles',    # не должно удалятся при удалении
-        verbose_name="Жанры",           # 1-го элемента
-        null=True,
-        blank=True
+        on_delete=models.CASCADE,
+        related_name='genre_titles',
+        verbose_name="Жанры",
     )
     title = models.ForeignKey(
         Title,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         related_name='genre_titles',
         verbose_name="Произведения",
-        null=True,
-        blank=True,
     )
 
     def __str__(self):
