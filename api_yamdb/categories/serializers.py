@@ -1,0 +1,45 @@
+from datetime import datetime
+
+from rest_framework import serializers
+
+from .models import Category, Genre, Title
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    '''Сериализатор для категорий.'''
+
+    class Meta:
+        model = Category
+        fields = ('id', 'name', 'slug')
+
+
+class GenreSerializer(serializers.ModelSerializer):
+    '''Сериализатор для жанров.'''
+
+    class Meta:
+        model = Genre
+        fields = ('id', 'name', 'slug')
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    '''Сериализатор для произведений.'''
+    category = serializers.SlugRelatedField()
+    genre = serializers.SlugRelatedField()
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'category', 'genre', 'year', 'description',
+            'rating'
+        )
+    
+    # Пока хз что делать с рэйтингом.
+
+    def validate_year(self, value):
+        """Проверка года выпуска."""
+        current_year = datetime.now().year
+        if value > current_year:
+            raise serializers.ValidationError(
+                'Нельзя добавлять произведение, которое еще не вышло.'
+            )
+        return value
