@@ -48,7 +48,7 @@ class Title(models.Model):
         Genre,
         through='titles',
         verbose_name="Жанры",
-        related_name='titles',
+        related_name='GenreTitle',
     )
     name = models.CharField("Название произведения", max_length=256)
     year = models.IntegerField("Год издания")
