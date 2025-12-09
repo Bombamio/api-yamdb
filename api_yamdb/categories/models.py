@@ -1,4 +1,5 @@
 from django.db import models
+from reviews.models import Review
 
 
 class Category(models.Model):
@@ -46,19 +47,14 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         Genre,
-        through='GenreTitle', # Было titles код не запускается!!!
+        through='GenreTitle',  # Было titles код не запускается!!!
         verbose_name="Жанры",
         related_name='titles',
     )
     name = models.CharField("Название произведения", max_length=256)
     year = models.IntegerField("Год издания")
     description = models.TextField("Описание", null=True, blank=True)
-    rating = models.IntegerField(
-        null=True,
-        blank=True,
-        verbose_name='Рейтинг',
-        help_text='Средняя оценка от 1 до 10 (рассчитывается автоматически)'
-    )
+    # rating тут не нужен все таки так как будет писаться в БД
 
     def __str__(self):
         return self.name
@@ -87,7 +83,7 @@ class GenreTitle(models.Model):
 
     def __str__(self):
         return f'{self.title.name} - {self.genre.name}'
-    
+
     class Meta:
         # Проверка на отсутствие дублированияполей `genre` и `title`.
         constraints = [
