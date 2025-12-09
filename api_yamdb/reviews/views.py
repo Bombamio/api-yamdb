@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
 from categories.models import Title
 
@@ -10,7 +10,7 @@ from api.permissions import IsAuthorOrModeratorOrAdminOrReadOnly
 class ReviewViewSet(viewsets.ModelViewSet):
     '''ViewSet для отзывов'''
     serializer_class = ReviewSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthorOrModeratorOrAdminOrReadOnly]
 
     def get_title(self):
         '''Получаем произведение по ID из URL'''
@@ -31,7 +31,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     '''ViewSet для комментариев к отзывам'''
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthorOrModeratorOrAdminOrReadOnly]
 
     def get_review(self):
         '''Получаем отзыв по ID из URL'''

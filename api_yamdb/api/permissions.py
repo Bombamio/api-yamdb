@@ -18,7 +18,8 @@ class IsAuthorOrModeratorOrAdminOrReadOnly(permissions.BasePermission):
 
 class IsAdmin(permissions.BasePermission):
     """
-    Docstring для IsAdmin
+    Ограничение, позволяющее редактировать группы, категории
+    и произведения только админом или суперюзером.
     """
 
     def has_permission(self, request, view):
