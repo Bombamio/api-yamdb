@@ -1,8 +1,7 @@
-from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework import viewsets, permissions
 from django.shortcuts import get_object_or_404
 from .models import Review, Comment
+from categories.models import Title
 from .serializers import ReviewSerializer, CommentSerializer
 
 
@@ -14,16 +13,18 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         '''Получаем отзывы для конкретного произведения'''
         title_id = self.kwargs.get('title_id')
-        return Review.objects.filter(title_id=title_id)
+        title = get_object_or_404(Title, id=title_id)
+        return Review.objects.filter(title=title)
 
     def perform_create(self, serializer):
         '''Создание отзыва с автором'''
         title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
 
-        # Сохраняем заглушку author_id (позже заменим на ForeignKey)
+        # Используем ForeignKey author и title из моделей Ильи
         serializer.save(
-            title_id=title_id,
-            author_id=self.request.user.id if self.request.user.is_authenticated else None
+            author=self.request.user,
+            title=title
         )
 
 
@@ -43,8 +44,8 @@ class CommentViewSet(viewsets.ModelViewSet):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
 
-        # Сохраняем заглушку author_id
+        # Используем ForeignKey author из моделей Ильи
         serializer.save(
             review=review,
-            author_id=self.request.user.id if self.request.user.is_authenticated else None
+            author=self.request.user
         )
