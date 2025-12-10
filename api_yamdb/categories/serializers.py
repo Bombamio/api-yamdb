@@ -2,6 +2,7 @@ from datetime import datetime
 
 from rest_framework import serializers
 
+from .utils import calculate_title_rating
 from .models import Category, Genre, Title
 
 
@@ -23,8 +24,9 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     '''Сериализатор для произведений.'''
-    category = serializers.SlugRelatedField()
-    genre = serializers.SlugRelatedField()
+    category = serializers.SlugRelatedField(slug_field='slug')
+    genre = serializers.SlugRelatedField(many=True, slug_field='slug')
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -32,8 +34,10 @@ class TitleSerializer(serializers.ModelSerializer):
             'id', 'name', 'category', 'genre', 'year', 'description',
             'rating'
         )
+        read_only_fields = ('category', 'genre')
     
-    # Пока хз что делать с рэйтингом.
+    def get_rating(self, obj):
+        return calculate_title_rating(obj)
 
     def validate_year(self, value):
         """Проверка года выпуска."""

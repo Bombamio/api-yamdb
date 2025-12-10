@@ -46,19 +46,13 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         Genre,
-        through='titles',
+        through='GenreTitle',
         verbose_name="Жанры",
-        related_name='GenreTitle',
+        related_name='titles',
     )
     name = models.CharField("Название произведения", max_length=256)
     year = models.IntegerField("Год издания")
     description = models.TextField("Описание", null=True, blank=True)
-    rating = models.IntegerField(
-        null=True,
-        blank=True,
-        verbose_name='Рейтинг',
-        help_text='Средняя оценка от 1 до 10 (рассчитывается автоматически)'
-    )
 
     def __str__(self):
         return self.name
