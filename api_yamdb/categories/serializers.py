@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from rest_framework import serializers
-
+from api_yamdb.utils import calculate_title_rating
+from datetime import datetime
 from .models import Category, Genre, Title
 
 
@@ -22,24 +21,24 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    '''Сериализатор для произведений.'''
-    category = serializers.SlugRelatedField()
-    genre = serializers.SlugRelatedField()
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug'
+    )
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True
+    )
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'category', 'genre', 'year', 'description',
-            'rating'
+            'id', 'name', 'year', 'description',
+            'category', 'genre', 'rating'
         )
-    
-    # Пока хз что делать с рэйтингом.
+        read_only_fields = ('rating',)  # rating нельзя менять напрямую
 
-    def validate_year(self, value):
-        """Проверка года выпуска."""
-        current_year = datetime.now().year
-        if value > current_year:
-            raise serializers.ValidationError(
-                'Нельзя добавлять произведение, которое еще не вышло.'
-            )
-        return value
+    def get_rating(self, obj):
+        return calculate_title_rating(obj)
