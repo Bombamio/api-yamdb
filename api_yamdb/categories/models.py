@@ -48,7 +48,7 @@ class Title(models.Model):
         Genre,
         through='GenreTitle',  # Было titles код не запускается!!!
         verbose_name="Жанры",
-        related_name='titles',
+        related_name='GenreTitle',
     )
     name = models.CharField("Название произведения", max_length=256)
     year = models.IntegerField("Год издания")
@@ -65,19 +65,15 @@ class GenreTitle(models.Model):
     """
     genre = models.ForeignKey(
         Genre,
-        on_delete=models.SET_NULL,      # Неуверен на счёт каскада, всё ведь
-        related_name='genre_titles',    # не должно удалятся при удалении
-        verbose_name="Жанры",           # 1-го элемента
-        null=True,
-        blank=True
+        on_delete=models.CASCADE,
+        related_name='genre_titles',
+        verbose_name="Жанры",
     )
     title = models.ForeignKey(
         Title,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         related_name='genre_titles',
         verbose_name="Произведения",
-        null=True,
-        blank=True,
     )
 
     def __str__(self):

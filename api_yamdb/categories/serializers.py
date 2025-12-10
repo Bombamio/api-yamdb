@@ -1,14 +1,23 @@
 from rest_framework import serializers
 from api_yamdb.utils import calculate_title_rating
+from datetime import datetime
 from .models import Category, Genre, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    pass
+    '''Сериализатор для категорий.'''
+
+    class Meta:
+        model = Category
+        fields = ('id', 'name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
-    pass
+    '''Сериализатор для жанров.'''
+
+    class Meta:
+        model = Genre
+        fields = ('id', 'name', 'slug')
 
 
 class TitleSerializer(serializers.ModelSerializer):
