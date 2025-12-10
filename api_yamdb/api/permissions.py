@@ -19,7 +19,8 @@ class IsAuthorOrModeratorOrAdminOrReadOnly(permissions.BasePermission):
 class IsAdminOrReadOnly(permissions.BasePermission):
     """
     Ограничение, позволяющее редактировать группы, категории
-    и произведения только админом или суперюзером.
+    и произведения только админом или суперюзером, а остальным
+    только проматривать.
     """
 
     def has_permission(self, request, view):
@@ -27,3 +28,13 @@ class IsAdminOrReadOnly(permissions.BasePermission):
             request.method in permissions.SAFE_METHODS
             or (request.user.is_authenticated and request.user.is_admin)
         )
+    
+
+class IsAdmin(permissions.BasePermission):
+    """
+    Ограничение, позволяющее редактировать группы, категории
+    и произведения только админом или суперюзером.
+    """
+
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.is_admin
