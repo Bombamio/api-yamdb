@@ -1,38 +1,37 @@
+# api_yamdb/users/admin.py
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.utils.translation import gettext_lazy as _
 from .models import User
 
 
-# Константы для админки
-PERSONAL_FIELDS = ('username', 'email', 'first_name', 'last_name')
-
-
 @admin.register(User)
-class CustomUserAdmin(UserAdmin):
-    '''Админка для кастомной модели User.'''
+class UserAdmin(BaseUserAdmin):
+    '''Кастомная админка для модели User.'''
 
-    list_display = PERSONAL_FIELDS + ('role', 'is_active')
-    list_filter = ('role', 'is_active', 'is_staff', 'is_superuser')
-    search_fields = PERSONAL_FIELDS
+    # Поля для списка пользователей
+    list_display = ('username', 'email', 'first_name',
+                    'last_name', 'role', 'is_staff')
+    list_filter = ('role', 'is_staff', 'is_superuser', 'is_active')
+    search_fields = ('username', 'email', 'first_name', 'last_name')
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        ('Персональная информация', {
-            'fields': ('first_name', 'last_name', 'email', 'bio')
+        (_('Personal info'), {
+         'fields': ('first_name', 'last_name', 'email', 'bio')}),
+        (_('Permissions'), {
+            'fields': ('role', 'is_active', 'is_staff', 'is_superuser',
+                       'groups', 'user_permissions'),
         }),
-        ('Права доступа', {
-            'fields': (
-                'role', 'is_active', 'is_staff', 'is_superuser',
-                'groups', 'user_permissions'
-            )
-        }),
-        ('Важные даты', {'fields': ('last_login', 'date_joined')}),
-        ('Подтверждение', {'fields': ('confirmation_code',)}),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
 
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': PERSONAL_FIELDS + ('password1', 'password2', 'role'),
+            'fields': ('username', 'email', 'password1', 'password2', 'role'),
         }),
     )
+
+    ordering = ('username',)
+    filter_horizontal = ('groups', 'user_permissions',)

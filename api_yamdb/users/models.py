@@ -1,16 +1,15 @@
+# api_yamdb/users/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import RegexValidator
 
 
-# Константы для повторного использования
 USERNAME_PATTERN = r'^[\w.@+-]+\Z'
 
 
 class User(AbstractUser):
     '''Кастомизированная модель пользователя для YaMDb.'''
 
-    # Константы ролей
     ROLE_USER = 'user'
     ROLE_MODERATOR = 'moderator'
     ROLE_ADMIN = 'admin'
