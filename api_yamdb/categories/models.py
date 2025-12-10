@@ -77,7 +77,7 @@ class GenreTitle(models.Model):
 
     def __str__(self):
         return f'{self.title.name} - {self.genre.name}'
-    
+
     class Meta:
         # Проверка на отсутствие дублированияполей `genre` и `title`.
         constraints = [
