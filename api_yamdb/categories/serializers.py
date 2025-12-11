@@ -11,7 +11,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('id', 'name', 'slug')
+        fields = ('name', 'slug')
         read_only_fields = ('slug',)
 
 
@@ -20,33 +20,45 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = ('id', 'name', 'slug')
+        fields = ('name', 'slug')
         read_only_fields = ('slug',)
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    '''Сериализатор для произведений.'''
-    category = serializers.SlugRelatedField(
-        queryset=Category.objects.all(),
-        slug_field='slug'
-    )
-    genre = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(),
-        slug_field='slug',
-        many=True
-    )
+class TitleReadSerializer(serializers.ModelSerializer):
+    '''Сериализатор для просмотра произведений.'''
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'description',
-            'category', 'genre', 'rating'
+            'id', 'name', 'year', 'rating', 'description',
+            'genre', 'category'
         )
-        read_only_fields = ('category', 'genre')
 
     def get_rating(self, obj):
         return calculate_title_rating(obj)
+
+
+class TitleWriteSerializer(serializers.ModelSerializer):
+    '''Сериализатор для добавления произведений.'''
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        many=True,
+        queryset=Genre.objects.all()
+    )
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year', 'description',
+            'genre', 'category'
+        )
 
     def validate_year(self, value):
         '''Проверка года выпуска.'''

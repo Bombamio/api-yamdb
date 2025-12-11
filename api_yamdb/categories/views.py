@@ -3,15 +3,14 @@ from rest_framework import viewsets, filters
 
 from api.permissions import IsAdminOrReadOnly
 from .models import Category, Genre, Title
-from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
-
+from . import serializers
 
 # Category fields.
 
 class CategoryViewSet(viewsets.ModelViewSet):
     '''ViewSet для категорий'''
     queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+    serializer_class = serializers.CategorySerializer
     lookup_field = 'slug'
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
@@ -23,7 +22,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class GenreViewSet(viewsets.ModelViewSet):
     '''ViewSet для жанров'''
     queryset = Genre.objects.all()
-    serializer_class = GenreSerializer
+    serializer_class = serializers.GenreSerializer
     lookup_field = 'slug'
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
@@ -32,10 +31,14 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 # Title fields.
 
-class TitleViewSet(viewsets.ModelViewSet):
+class TitleViewSet(viewsets.ReadOnlyModelViewSet):
     '''ViewSet для произведений'''
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (DjangoFilterBackend,)
     filterset_fields  = ('category__slug', 'genre__slug', 'name', 'year')
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return serializers.TitleReadSerializer
+        return serializers.TitleWriteSerializer
