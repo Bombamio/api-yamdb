@@ -1,28 +1,35 @@
 from rest_framework import viewsets, filters
-from django.shortcuts import get_object_or_404
 
 from api.permissions import IsAdminOrReadOnly
 from .models import Category, Genre, Title
 from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
 
 
+# Category fields.
+
 class CategoryViewSet(viewsets.ModelViewSet):
     '''ViewSet для категорий'''
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAdminOrReadOnly]
+    lookup_field = 'slug'
+    pagination_class = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
+
+# Genre fields.
 
 class GenreViewSet(viewsets.ModelViewSet):
     '''ViewSet для жанров'''
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    lookup_field = 'slug'
+    pagination_class = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
+
+# Title fields.
 
 class TitleViewSet(viewsets.ModelViewSet):
     '''ViewSet для произведений'''
