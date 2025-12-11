@@ -12,6 +12,7 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('id', 'name', 'slug')
+        read_only_fields = ('slug',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -20,6 +21,7 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ('id', 'name', 'slug')
+        read_only_fields = ('slug',)
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -35,7 +37,7 @@ class TitleSerializer(serializers.ModelSerializer):
             'rating'
         )
         read_only_fields = ('category', 'genre')
-    
+
     def get_rating(self, obj):
         return calculate_title_rating(obj)
 

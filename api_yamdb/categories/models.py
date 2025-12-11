@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 
 
 class Category(models.Model):
@@ -9,10 +10,23 @@ class Category(models.Model):
     Поля: `name`, `slug`.
     """
     name = models.CharField("Название категории", max_length=256)
-    slug = models.SlugField("Слаг", unique=True, max_length=50)
+    slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        # Автоматически генерирует slug из name.
+        if not self.slug:
+            slug = slugify(self.name)
+            counter = 1
+            # В цикле проверяет на уникальноть slug.
+            while Category.objects.filter(slug=slug).exists():
+                counter += 1
+            # Автоматически формировать уникальные slug даже при
+            # одинаковых названиях.
+            self.slug = f'{slug}-{counter}'
+        super().save(*args, **kwargs)
 
 
 class Genre(models.Model):
@@ -23,10 +37,23 @@ class Genre(models.Model):
     Поля: `name`, `slug`.
     """
     name = models.CharField("Название жанра", max_length=256)
-    slug = models.SlugField("Слаг", unique=True, max_length=50)
+    slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        # Автоматически генерирует slug из name.
+        if not self.slug:
+            slug = slugify(self.name)
+            counter = 1
+            # В цикле проверяет на уникальноть slug.
+            while Genre.objects.filter(slug=slug).exists():
+                counter += 1
+            # Автоматически формировать уникальные slug даже при
+            # одинаковых названиях.
+            self.slug = f'{slug}-{counter}'
+        super().save(*args, **kwargs)
 
 
 class Title(models.Model):
@@ -77,7 +104,7 @@ class GenreTitle(models.Model):
 
     def __str__(self):
         return f'{self.title.name} - {self.genre.name}'
-    
+
     class Meta:
         # Проверка на отсутствие дублированияполей `genre` и `title`.
         constraints = [

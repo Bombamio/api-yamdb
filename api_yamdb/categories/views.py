@@ -1,42 +1,32 @@
-from rest_framework import viewsets, filters, generics
+from rest_framework import viewsets, filters
 
-from api.permissions import IsAdmin, IsAdminOrReadOnly
+from api.permissions import IsAdminOrReadOnly
 from .models import Category, Genre, Title
 from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
 
 
 # Category fields.
 
-class CategoryListCreateView(generics.ListCreateAPIView):
-    '''ListView для категорий'''
+class CategoryViewSet(viewsets.ModelViewSet):
+    '''ViewSet для категорий'''
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    lookup_field = 'slug'
+    pagination_class = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-
-
-class CategoryDestroyView(generics.DestroyAPIView):
-    '''APIView для категорий'''
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    permission_classes = [IsAdmin]
 
 
 # Genre fields.
 
-class GenreListCreateView(generics.ListCreateAPIView):
-    '''ListView для жанров'''
+class GenreViewSet(viewsets.ModelViewSet):
+    '''ViewSet для жанров'''
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    lookup_field = 'slug'
+    pagination_class = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-
-
-class GenreDestroyView(generics.DestroyAPIView):
-    '''APIView для жанров'''
-    queryset = Genre.objects.all()
-    serializer_class = GenreSerializer
-    permission_classes = [IsAdmin]
 
 
 # Title fields.
