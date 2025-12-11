@@ -2,10 +2,10 @@ from rest_framework import permissions
 
 
 class IsAuthorOrModeratorOrAdminOrReadOnly(permissions.BasePermission):
-    """
+    '''
     Общее ограничение доступа с возможностью редактирования только
     автором, модератором или админом.
-    """
+    '''
 
     def has_object_permission(self, request, view, obj):
         return (

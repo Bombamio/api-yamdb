@@ -49,7 +49,7 @@ class TitleSerializer(serializers.ModelSerializer):
         return calculate_title_rating(obj)
 
     def validate_year(self, value):
-        """Проверка года выпуска."""
+        '''Проверка года выпуска.'''
         current_year = datetime.now().year
         if value > current_year:
             raise serializers.ValidationError(

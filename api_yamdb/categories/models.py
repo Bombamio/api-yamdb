@@ -3,12 +3,12 @@ from django.utils.text import slugify
 
 
 class Category(models.Model):
-    """
+    '''
     Категории (типы) произведений («Фильмы», «Книги», «Музыка»).
     Одно произведение может быть привязано только к одной категории.
 
     Поля: `name`, `slug`.
-    """
+    '''
     name = models.CharField("Название категории", max_length=256)
     slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
 
@@ -32,12 +32,12 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    """
+    '''
     Жанры произведений. Одно произведение может быть привязано
     к нескольким жанрам.
 
     Поля: `name`, `slug`.
-    """
+    '''
     name = models.CharField("Название жанра", max_length=256)
     slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
 
@@ -61,12 +61,12 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    """
+    '''
     Произведения, к которым пишут отзывы (определённый фильм, книга
     или песенка).
 
     Поля: `name`, `year`, `description`, `category`, `genre`, `rating`.
-    """
+    '''
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -90,9 +90,9 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
-    """
+    '''
     Класс для поля типа ManyToMany.
-    """
+    '''
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,

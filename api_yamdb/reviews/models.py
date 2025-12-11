@@ -8,11 +8,11 @@ User = get_user_model()
 
 
 class Review(models.Model):
-    """
+    '''
     Отзывы на произведения. Отзыв привязан к определённому произведению.
-    
+
     Поля: `text`, `score`, `author`, `pub_date`, `title`.
-    """
+    '''
     text = models.TextField("Текст отзыва")
     score = models.IntegerField(
         "Оценка произвидения",
@@ -48,11 +48,11 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    """
+    '''
     Комментарии к отзывам. Комментарий привязан к определённому отзыву.
 
     Поля: `text`, `author`, `pub_date`, `review`.
-    """
+    '''
     text = models.TextField("Текст комментария")
     author = models.ForeignKey(
         User,
