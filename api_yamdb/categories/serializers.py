@@ -1,6 +1,6 @@
-from datetime import datetime
-
 from rest_framework import serializers
+
+from datetime import datetime
 
 from .utils import calculate_title_rating
 from .models import Category, Genre, Title
@@ -26,15 +26,22 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     '''Сериализатор для произведений.'''
-    category = serializers.SlugRelatedField(slug_field='slug')
-    genre = serializers.SlugRelatedField(many=True, slug_field='slug')
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug'
+    )
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True
+    )
     rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'category', 'genre', 'year', 'description',
-            'rating'
+            'id', 'name', 'year', 'description',
+            'category', 'genre', 'rating'
         )
         read_only_fields = ('category', 'genre')
 
