@@ -18,14 +18,16 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         # Автоматически генерирует slug из name.
         if not self.slug:
+            base_slug = slugify(self.name)
             slug = slugify(self.name)
             counter = 1
             # В цикле проверяет на уникальноть slug.
-            while Category.objects.filter(slug=slug).exists():
+            while Genre.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
                 counter += 1
             # Автоматически формировать уникальные slug даже при
             # одинаковых названиях.
-            self.slug = f'{slug}-{counter}'
+            self.slug = slug
         super().save(*args, **kwargs)
 
 
@@ -45,14 +47,16 @@ class Genre(models.Model):
     def save(self, *args, **kwargs):
         # Автоматически генерирует slug из name.
         if not self.slug:
+            base_slug = slugify(self.name)
             slug = slugify(self.name)
             counter = 1
             # В цикле проверяет на уникальноть slug.
             while Genre.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
                 counter += 1
             # Автоматически формировать уникальные slug даже при
             # одинаковых названиях.
-            self.slug = f'{slug}-{counter}'
+            self.slug = slug
         super().save(*args, **kwargs)
 
 
