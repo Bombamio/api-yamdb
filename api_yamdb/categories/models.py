@@ -12,6 +12,10 @@ class Category(models.Model):
     name = models.CharField("Название категории", max_length=256)
     slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
 
+    class Meta:
+        verbose_name = 'категория'
+        verbose_name_plural = 'Категории'
+
     def __str__(self):
         return self.name
 
@@ -40,6 +44,10 @@ class Genre(models.Model):
     '''
     name = models.CharField("Название жанра", max_length=256)
     slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
+
+    class Meta:
+        verbose_name = 'жанр'
+        verbose_name_plural = 'Жанры'
 
     def __str__(self):
         return self.name
@@ -85,6 +93,10 @@ class Title(models.Model):
     year = models.IntegerField("Год издания")
     description = models.TextField("Описание", null=True, blank=True)
 
+    class Meta:
+        verbose_name = 'произведение'
+        verbose_name_plural = 'Произведения'
+
     def __str__(self):
         return self.name
 
@@ -115,9 +127,5 @@ class GenreTitle(models.Model):
             models.UniqueConstraint(
                 fields=["genre", "title"],
                 name='unique_genre_title'
-            ),
-            models.CheckConstraint(
-                check=~models.Q(genre=models.F('title')),
-                name='prevent_self_follow'
             )
         ]
