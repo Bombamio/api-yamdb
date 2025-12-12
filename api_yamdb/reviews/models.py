@@ -13,9 +13,9 @@ class Review(models.Model):
 
     Поля: `text`, `score`, `author`, `pub_date`, `title`.
     '''
-    text = models.TextField("Текст отзыва")
+    text = models.TextField('Текст отзыва')
     score = models.IntegerField(
-        "Оценка произвидения",
+        'Оценка произвидения',
         validators=[MinValueValidator(1), MaxValueValidator(10)],
         help_text='Оценка от 1 до 10'
     )
@@ -23,17 +23,17 @@ class Review(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='reviews',
-        verbose_name="Автор отзыва"
+        verbose_name='Автор отзыва'
     )
     pub_date = models.DateTimeField(
-        "Дата публикации",
+        'Дата публикации',
         auto_now_add=True,
     )
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
         related_name='reviews',
-        verbose_name="Произведение"
+        verbose_name='Произведение'
     )
 
     class Meta:
@@ -45,6 +45,8 @@ class Review(models.Model):
             )
         ]
         ordering = ['-pub_date']
+        verbose_name = 'отзыв'
+        verbose_name_plural = 'Отзывы'
 
 
 class Comment(models.Model):
@@ -53,26 +55,28 @@ class Comment(models.Model):
 
     Поля: `text`, `author`, `pub_date`, `review`.
     '''
-    text = models.TextField("Текст комментария")
+    text = models.TextField('Текст комментария')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name="Автор комментария"
+        verbose_name='Автор комментария'
     )
     pub_date = models.DateTimeField(
-        "Дата публикации",
+        'Дата публикации',
         auto_now_add=True,
     )
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name="Отзыв"
+        verbose_name='Отзыв'
     )
 
     class Meta:
         ordering = ['pub_date']
+        verbose_name = 'коментарий'
+        verbose_name_plural = 'Коментарии'
 
     def __str__(self):
         return f'Комментарий {self.id} к отзыву {self.review.id}'

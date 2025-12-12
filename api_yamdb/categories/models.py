@@ -1,6 +1,9 @@
 from django.db import models
 from django.db.models import Avg
 from django.utils.text import slugify
+from django.core.validators import MaxValueValidator
+
+from datetime import datetime
 
 
 class Category(models.Model):
@@ -10,8 +13,8 @@ class Category(models.Model):
 
     Поля: `name`, `slug`.
     '''
-    name = models.CharField("Название категории", max_length=256)
-    slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
+    name = models.CharField('Название категории', max_length=256)
+    slug = models.SlugField('Слаг', unique=True, max_length=50, blank=True)
 
     class Meta:
         verbose_name = 'категория'
@@ -28,7 +31,7 @@ class Category(models.Model):
             counter = 1
             # В цикле проверяет на уникальноть slug.
             while Genre.objects.filter(slug=slug).exists():
-                slug = f"{base_slug}-{counter}"
+                slug = f'{base_slug}-{counter}'
                 counter += 1
             # Автоматически формировать уникальные slug даже при
             # одинаковых названиях.
@@ -43,8 +46,8 @@ class Genre(models.Model):
 
     Поля: `name`, `slug`.
     '''
-    name = models.CharField("Название жанра", max_length=256)
-    slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
+    name = models.CharField('Название жанра', max_length=256)
+    slug = models.SlugField('Слаг', unique=True, max_length=50, blank=True)
 
     class Meta:
         verbose_name = 'жанр'
@@ -61,7 +64,7 @@ class Genre(models.Model):
             counter = 1
             # В цикле проверяет на уникальноть slug.
             while Genre.objects.filter(slug=slug).exists():
-                slug = f"{base_slug}-{counter}"
+                slug = f'{base_slug}-{counter}'
                 counter += 1
             # Автоматически формировать уникальные slug даже при
             # одинаковых названиях.
@@ -80,19 +83,22 @@ class Title(models.Model):
         Category,
         on_delete=models.SET_NULL,
         related_name='titles',
-        verbose_name="Категория",
+        verbose_name='Категория',
         null=True,
         blank=True
     )
     genre = models.ManyToManyField(
         Genre,
         through='GenreTitle',
-        verbose_name="Жанры",
+        verbose_name='Жанры',
         related_name='titles',
     )
-    name = models.CharField("Название произведения", max_length=256)
-    year = models.IntegerField("Год издания")
-    description = models.TextField("Описание", null=True, blank=True)
+    name = models.CharField('Название произведения', max_length=256)
+    year = models.IntegerField(
+        'Год издания',
+        validators=[MaxValueValidator(datetime.now().year)],
+    )
+    description = models.TextField('Описание', null=True, blank=True)
 
     @property
     def rating(self):
@@ -116,13 +122,13 @@ class GenreTitle(models.Model):
         Genre,
         on_delete=models.CASCADE,
         related_name='genre_titles',
-        verbose_name="Жанры",
+        verbose_name='Жанры',
     )
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
         related_name='genre_titles',
-        verbose_name="Произведения",
+        verbose_name='Произведения',
     )
 
     def __str__(self):
@@ -132,7 +138,7 @@ class GenreTitle(models.Model):
         # Проверка на отсутствие дублированияполей `genre` и `title`.
         constraints = [
             models.UniqueConstraint(
-                fields=["genre", "title"],
+                fields=['genre', 'title'],
                 name='unique_genre_title'
             )
         ]

@@ -9,7 +9,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     score = serializers.IntegerField(
         min_value=1,
         max_value=10,
-        help_text="Оценка от 1 до 10"
+        help_text='Оценка от 1 до 10'
     )
 
     class Meta:

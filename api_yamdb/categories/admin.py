@@ -16,7 +16,7 @@ class CategoryAdmin(admin.ModelAdmin):
         TitleInline,
     )
     list_display = (
-        'name',        
+        'name',
     )
 
 
@@ -30,13 +30,10 @@ class TitleAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'year',
-        'description',
         'category',
-        'genres_list'
+        'genres_list',
     )
     list_editable = (
-        'year',
-        'description',
         'category',
     )
     search_fields = (
