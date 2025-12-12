@@ -2,7 +2,6 @@ from rest_framework import serializers
 
 from datetime import datetime
 
-from .utils import calculate_title_rating
 from .models import Category, Genre, Title
 
 
@@ -28,7 +27,6 @@ class TitleReadSerializer(serializers.ModelSerializer):
     '''Сериализатор для просмотра произведений.'''
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
-    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -36,9 +34,6 @@ class TitleReadSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description',
             'genre', 'category'
         )
-
-    def get_rating(self, obj):
-        return calculate_title_rating(obj)
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):

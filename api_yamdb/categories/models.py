@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Avg
 from django.utils.text import slugify
 
 
@@ -92,6 +93,12 @@ class Title(models.Model):
     name = models.CharField("Название произведения", max_length=256)
     year = models.IntegerField("Год издания")
     description = models.TextField("Описание", null=True, blank=True)
+
+    @property
+    def rating(self):
+        '''Вычисляет рейтинг произведения.'''
+        avg = self.reviews.aggregate(Avg('score'))['score__avg']
+        return int(round(avg)) if avg else None
 
     class Meta:
         verbose_name = 'произведение'
