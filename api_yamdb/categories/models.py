@@ -1,5 +1,11 @@
 from django.db import models
 from django.utils.text import slugify
+from django.core.validators import MaxValueValidator
+from datetime import datetime
+
+# TODO Проблема: datetime.now().year вычисляется при импорте модуля
+# (при запуске сервера) и не обновляется.
+# В 2025 году нельзя будет добавить произведение 2024 года!
 
 
 class SlugAutoFillMixin:
@@ -69,7 +75,13 @@ class Title(models.Model):
         related_name='titles',
     )
     name = models.CharField("Название произведения", max_length=256)
-    year = models.IntegerField("Год издания")
+    year = models.IntegerField(
+        "Год издания",
+        validators=[MaxValueValidator(
+            limit_value=lambda: datetime.now().year,
+            message='Год не может быть больше текущего'
+        )]
+    )
     description = models.TextField("Описание", null=True, blank=True)
 
     class Meta:
