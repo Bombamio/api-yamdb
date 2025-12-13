@@ -1,4 +1,6 @@
+import django_filters
 from rest_framework import viewsets, status, filters, permissions
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.shortcuts import get_object_or_404
@@ -63,3 +65,15 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return TitleReadSerializer
         return TitleWriteSerializer
+
+
+class TitleFilter(django_filters.FilterSet):
+    genre = django_filters.CharFilter(field_name='genre__slug')
+    category = django_filters.CharFilter(field_name='category__slug')
+    name = django_filters.CharFilter(
+        field_name='name', lookup_expr='icontains')
+    year = django_filters.NumberFilter(field_name='year')
+
+    class Meta:
+        model = Title
+        fields = ['genre', 'category', 'name', 'year']
