@@ -27,7 +27,7 @@ class SlugAutoFillMixin:
 
 class Category(SlugAutoFillMixin, models.Model):
     '''Категории (типы) произведений («Фильмы», «Книги», «Музыка»).'''
-    name = models.CharField("Название категории", max_length=256)
+    name = models.CharField("Название категории", max_length=256, unique=True)
     slug = models.SlugField(
         "Слаг",
         unique=True,
