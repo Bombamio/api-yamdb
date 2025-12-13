@@ -1,8 +1,6 @@
-# api_yamdb/users/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import RegexValidator
-
 
 USERNAME_PATTERN = r'^[\w.@+-]+\Z'
 
@@ -22,8 +20,7 @@ class User(AbstractUser):
 
     username_validator = RegexValidator(
         regex=USERNAME_PATTERN,
-        message='Имя пользователя может содержать только буквы, '
-        'цифры и @/./+/-/_'
+        message='Имя пользователя может содержать только буквы, цифры и @/./+/-/_'
     )
 
     username = models.CharField(
@@ -31,8 +28,7 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
         validators=[username_validator],
-        help_text='Требуется. 150 символов или меньше.'
-        'Только буквы, цифры и @/./+/-/_.'
+        help_text='Требуется. 150 символов или меньше. Только буквы, цифры и @/./+/-/_.'
     )
 
     email = models.EmailField(
@@ -56,7 +52,7 @@ class User(AbstractUser):
 
     confirmation_code = models.CharField(
         'Код подтверждения',
-        max_length=100,
+        max_length=6,
         blank=True,
         null=True,
         editable=False

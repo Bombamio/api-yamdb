@@ -1,31 +1,69 @@
-# api_yamdb/users/views.py
+import random
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status, permissions
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 from api.permissions import IsAdmin
 from .serializers import (
     UserSerializer, UserCreateSerializer,
-    UserSignUpSerializer, TokenObtainSerializer
+    UserSignUpSerializer, TokenObtainSerializer, UserMeSerializer
 )
 
 User = get_user_model()
 
 
+def generate_confirmation_code():
+    '''Генерирует 6-значный код подтверждения.'''
+    return ''.join(str(random.randint(0, 9)) for _ in range(6))
+
+
+class CustomPagination(PageNumberPagination):
+    '''Кастомная пагинация.'''
+    page_size = 10
+    page_size_query_param = 'limit'
+    max_page_size = 100
+
+
 class UserViewSet(viewsets.ModelViewSet):
-    '''ViewSet для управления пользователями.'''
+    '''ViewSet для управления пользователями администратором.'''
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
     permission_classes = [IsAdmin]
+    pagination_class = CustomPagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username', 'email']
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_serializer_class(self):
+        '''Возвращает сериализатор для действия.'''
         if self.action == 'create':
             return UserCreateSerializer
         return UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        '''Создание пользователя администратором.'''
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        # Генерируем код подтверждения
+        user.confirmation_code = generate_confirmation_code()
+        user.save()
+
+        response_serializer = UserSerializer(user)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            response_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
 
     @action(
         detail=False,
@@ -33,32 +71,28 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def me(self, request):
-        '''Эндпоинт для работы с собственным профилем (/api/v1/users/me/).'''
+        '''Эндпоинт для работы с собственным профилем.'''
         if request.method == 'GET':
             serializer = self.get_serializer(request.user)
             return Response(serializer.data)
 
         elif request.method == 'PATCH':
-            serializer = self.get_serializer(
+            serializer = UserMeSerializer(
                 request.user,
                 data=request.data,
                 partial=True
             )
             serializer.is_valid(raise_exception=True)
-
-            # Не позволяем менять роль через /me (по ТЗ)
-            if 'role' in serializer.validated_data:
-                serializer.validated_data.pop('role')
-
             serializer.save()
             return Response(serializer.data)
 
 
 class SignUpView(APIView):
-    '''Регистрация нового пользователя (/api/v1/auth/signup/).'''
+    '''Регистрация пользователя с отправкой кода подтверждения.'''
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        '''Обработка POST-запроса.'''
         serializer = UserSignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -66,26 +100,35 @@ class SignUpView(APIView):
         email = data['email']
         username = data['username']
 
-        # Проверяем, существует ли пользователь (мог быть создан админом)
         user, created = User.objects.get_or_create(
             email=email,
             username=username,
             defaults={'is_active': True}
         )
 
-        # Генерируем confirmation_code
-        # TODO: Потом реализуем отправку писем если нужно
-        user.confirmation_code = '123456'  # Заглушка для тестов
+        user.confirmation_code = generate_confirmation_code()
         user.save()
 
-        return Response({'email': email, 'username': username})
+        send_mail(
+            subject='Код подтверждения YaMDb',
+            message=f'Ваш код подтверждения: {user.confirmation_code}',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+
+        return Response(
+            {'email': email, 'username': username},
+            status=status.HTTP_200_OK
+        )
 
 
 class TokenObtainView(APIView):
-    '''Получение JWT токена (/api/v1/auth/token/).'''
+    '''Получение JWT токена по коду подтверждения.'''
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        '''Обработка POST-запроса.'''
         serializer = TokenObtainSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -95,13 +138,11 @@ class TokenObtainView(APIView):
 
         user = get_object_or_404(User, username=username)
 
-        # Проверяем confirmation_code
         if user.confirmation_code != confirmation_code:
             return Response(
                 {'error': 'Неверный код подтверждения'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Генерируем токен
         token = AccessToken.for_user(user)
         return Response({'token': str(token)})

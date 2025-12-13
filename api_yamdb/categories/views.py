@@ -1,44 +1,65 @@
+from rest_framework import viewsets, status, filters, permissions
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, filters
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from django.shortcuts import get_object_or_404
 
-from api.permissions import IsAdminOrReadOnly
 from .models import Category, Genre, Title
-from . import serializers
+from .serializers import (
+    CategorySerializer, GenreSerializer,
+    TitleReadSerializer, TitleWriteSerializer
+)
+from api.permissions import IsAdminOrReadOnly
 
-# Category fields.
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    '''ViewSet для категорий'''
     queryset = Category.objects.all()
-    serializer_class = serializers.CategorySerializer
-    lookup_field = 'slug'
+    serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
+    lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    http_method_names = ['get', 'post',
+                         'delete', 'head', 'options']  # Без patch
 
+    def retrieve(self, request, *args, **kwargs):
+        # Запрещаем GET запросы к конкретной категории по slug
+        if request.method == 'GET':
+            return Response(
+                {'detail': 'Method "GET" not allowed.'},
+                status=status.HTTP_405_METHOD_NOT_ALLOWED
+            )
+        return super().retrieve(request, *args, **kwargs)
 
-# Genre fields.
 
 class GenreViewSet(viewsets.ModelViewSet):
-    '''ViewSet для жанров'''
     queryset = Genre.objects.all()
-    serializer_class = serializers.GenreSerializer
-    lookup_field = 'slug'
+    serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    http_method_names = ['get', 'post',
+                         'delete', 'head', 'options']  # Без patch
+
+    def retrieve(self, request, *args, **kwargs):
+        # Запрещаем GET запросы к конкретному жанру по slug
+        if request.method == 'GET':
+            return Response(
+                {'detail': 'Method "GET" not allowed.'},
+                status=status.HTTP_405_METHOD_NOT_ALLOWED
+            )
+        return super().retrieve(request, *args, **kwargs)
 
 
-# Title fields.
-
-class TitleViewSet(viewsets.ReadOnlyModelViewSet):
-    '''ViewSet для произведений'''
+class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    permission_classes = [IsAdminOrReadOnly]
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields  = ('category__slug', 'genre__slug', 'name', 'year')
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filterset_fields = ('category__slug', 'genre__slug', 'year', 'name')
+    search_fields = ('name', 'description')
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
-            return serializers.TitleReadSerializer
-        return serializers.TitleWriteSerializer
+            return TitleReadSerializer
+        return TitleWriteSerializer

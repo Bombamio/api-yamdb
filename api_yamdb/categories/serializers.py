@@ -1,8 +1,7 @@
 from rest_framework import serializers
-
 from datetime import datetime
+import re
 
-from .utils import calculate_title_rating
 from .models import Category, Genre, Title
 
 
@@ -12,7 +11,27 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('name', 'slug')
-        read_only_fields = ('slug',)
+        # НЕ добавляем read_only_fields для slug!
+        # Slug должен быть доступен для записи при создании
+
+    def validate_slug(self, value):
+        '''Валидация slug для категории.'''
+        if not value:
+            return value
+
+        # Проверка длины slug
+        if len(value) > 50:
+            raise serializers.ValidationError(
+                'Slug не может быть длиннее 50 символов.'
+            )
+
+        # Проверка паттерна slug
+        if not re.match(r'^[-a-zA-Z0-9_]+$', value):
+            raise serializers.ValidationError(
+                'Slug может содержать только буквы, цифры, дефисы и подчеркивания.'
+            )
+
+        return value
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -21,7 +40,26 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ('name', 'slug')
-        read_only_fields = ('slug',)
+        # НЕ добавляем read_only_fields для slug!
+
+    def validate_slug(self, value):
+        '''Валидация slug для жанра.'''
+        if not value:
+            return value
+
+        # Проверка длины slug
+        if len(value) > 50:
+            raise serializers.ValidationError(
+                'Slug не может быть длиннее 50 символов.'
+            )
+
+        # Проверка паттерна slug
+        if not re.match(r'^[-a-zA-Z0-9_]+$', value):
+            raise serializers.ValidationError(
+                'Slug может содержать только буквы, цифры, дефисы и подчеркивания.'
+            )
+
+        return value
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
@@ -36,8 +74,10 @@ class TitleReadSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description',
             'genre', 'category'
         )
+        read_only_fields = ('id', 'rating')
 
     def get_rating(self, obj):
+        from .utils import calculate_title_rating
         return calculate_title_rating(obj)
 
 
@@ -45,7 +85,9 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     '''Сериализатор для добавления произведений.'''
     category = serializers.SlugRelatedField(
         slug_field='slug',
-        queryset=Category.objects.all()
+        queryset=Category.objects.all(),
+        required=False,
+        allow_null=True
     )
     genre = serializers.SlugRelatedField(
         slug_field='slug',
@@ -68,3 +110,31 @@ class TitleWriteSerializer(serializers.ModelSerializer):
                 'Нельзя добавлять произведение, которое еще не вышло.'
             )
         return value
+
+    def create(self, validated_data):
+        # Извлекаем жанры из validated_data
+        genres_data = validated_data.pop('genre', [])
+        title = Title.objects.create(**validated_data)
+
+        # Добавляем жанры через промежуточную модель
+        for genre in genres_data:
+            title.genre.add(genre)
+
+        return title
+
+    def update(self, instance, validated_data):
+        # Извлекаем жанры из validated_data
+        genres_data = validated_data.pop('genre', None)
+
+        # Обновляем поля
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Обновляем жанры если они переданы
+        if genres_data is not None:
+            instance.genre.clear()
+            for genre in genres_data:
+                instance.genre.add(genre)
+
+        return instance
