@@ -1,3 +1,5 @@
+# categories/views.py - ПРАВИЛЬНЫЙ ПОРЯДОК
+
 import django_filters
 from rest_framework import viewsets, status, filters, permissions
 from rest_framework.response import Response
@@ -13,6 +15,35 @@ from .serializers import (
 from api.permissions import IsAdminOrReadOnly
 
 
+# 1. Сначала определите TitleFilter
+class TitleFilter(django_filters.FilterSet):
+    genre = django_filters.CharFilter(field_name='genre__slug')
+    category = django_filters.CharFilter(field_name='category__slug')
+    name = django_filters.CharFilter(
+        field_name='name', lookup_expr='icontains')
+    year = django_filters.NumberFilter(field_name='year')
+
+    class Meta:
+        model = Title
+        fields = ['genre', 'category', 'name', 'year']
+
+
+# 2. Потом TitleViewSet (теперь он знает о TitleFilter)
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filterset_class = TitleFilter  # ← Теперь работает!
+    search_fields = ('name', 'description')
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleReadSerializer
+        return TitleWriteSerializer
+
+
+# 3. Потом остальные ViewSets
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -51,29 +82,3 @@ class GenreViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_405_METHOD_NOT_ALLOWED
             )
         return super().retrieve(request, *args, **kwargs)
-
-
-class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
-    permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    filterset_fields = ('category__slug', 'genre__slug', 'year', 'name')
-    search_fields = ('name', 'description')
-    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
-
-    def get_serializer_class(self):
-        if self.action in ('list', 'retrieve'):
-            return TitleReadSerializer
-        return TitleWriteSerializer
-
-
-class TitleFilter(django_filters.FilterSet):
-    genre = django_filters.CharFilter(field_name='genre__slug')
-    category = django_filters.CharFilter(field_name='category__slug')
-    name = django_filters.CharFilter(
-        field_name='name', lookup_expr='icontains')
-    year = django_filters.NumberFilter(field_name='year')
-
-    class Meta:
-        model = Title
-        fields = ['genre', 'category', 'name', 'year']
