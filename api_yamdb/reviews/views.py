@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from django.shortcuts import get_object_or_404
 
 from api.permissions import IsAuthorOrModeratorOrAdminOrReadOnly
+from rest_framework.exceptions import ValidationError
 from .models import Review, Comment
 from categories.models import Title
 from .serializers import ReviewSerializer, CommentSerializer
