@@ -84,6 +84,12 @@ class Title(models.Model):
     )
     description = models.TextField("Описание", null=True, blank=True)
 
+    @property
+    def rating(self):
+        '''Вычисляет рейтинг произведения.'''
+        avg = self.reviews.aggregate(Avg('score'))['score__avg']
+        return round(avg, 1) if avg else None  # Округление до 0.1
+
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
