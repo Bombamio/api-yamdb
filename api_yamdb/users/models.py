@@ -2,6 +2,9 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import RegexValidator
 
+MAX_USERNAME_LENGTH = 150
+MAX_EMAIL_LENGTH = 254
+MAX_NAME_LENGTH = 150
 USERNAME_PATTERN = r'^[\w.@+-]+\Z'
 
 
@@ -20,26 +23,30 @@ class User(AbstractUser):
 
     username_validator = RegexValidator(
         regex=USERNAME_PATTERN,
-        message='Имя пользователя может содержать только буквы, цифры и @/./+/-/_'
+        message='Имя пользователя может содержать только буквы, цифры'
     )
 
     username = models.CharField(
         'Имя пользователя',
-        max_length=150,
+        max_length=MAX_NAME_LENGTH,
         unique=True,
         validators=[username_validator],
-        help_text='Требуется. 150 символов или меньше. Только буквы, цифры и @/./+/-/_.'
+        help_text='Требуется. 150 символов или меньше. Только буквы, цифры'
     )
 
     email = models.EmailField(
         'Электронная почта',
-        max_length=254,
+        max_length=MAX_EMAIL_LENGTH,
         unique=True,
         help_text='Требуется. Уникальный email.'
     )
 
-    first_name = models.CharField('Имя', max_length=150, blank=True)
-    last_name = models.CharField('Фамилия', max_length=150, blank=True)
+    first_name = models.CharField(
+        'Имя', max_length=MAX_NAME_LENGTH, blank=True
+        )
+    last_name = models.CharField(
+        'Фамилия', max_length=MAX_NAME_LENGTH, blank=True
+        )
     bio = models.TextField('Биография', blank=True)
 
     role = models.CharField(

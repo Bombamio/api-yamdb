@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django.contrib import admin
 from .models import Category, Genre, Title, GenreTitle
 
@@ -62,7 +63,6 @@ class TitleAdmin(admin.ModelAdmin):
     genres_list.short_description = 'Жанры'
 
     def rating(self, obj):
-        from django.db.models import Avg
         rating = obj.reviews.aggregate(Avg('score'))['score__avg']
         return round(rating, 2) if rating else 'Нет отзывов'
     rating.short_description = 'Рейтинг'

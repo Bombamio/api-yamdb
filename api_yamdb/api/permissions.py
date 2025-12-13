@@ -32,7 +32,6 @@ class IsAdmin(permissions.BasePermission):
         )
 
 
-# TODO: Для: Объектов без автора (категории, жанры, пользователи)
 class IsAdminOrReadOnly(permissions.BasePermission):
     '''
     Разрешение на изменение только для администраторов.

@@ -13,7 +13,6 @@ from .serializers import (
 from api.permissions import IsAdminOrReadOnly
 
 
-# 1. Сначала определите TitleFilter
 class TitleFilter(django_filters.FilterSet):
     genre = django_filters.CharFilter(field_name='genre__slug')
     category = django_filters.CharFilter(field_name='category__slug')
@@ -26,12 +25,11 @@ class TitleFilter(django_filters.FilterSet):
         fields = ['genre', 'category', 'name', 'year']
 
 
-# 2. Потом TitleViewSet (теперь он знает о TitleFilter)
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    filterset_class = TitleFilter  # ← Теперь работает!
+    filterset_class = TitleFilter  
     search_fields = ('name', 'description')
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
@@ -41,7 +39,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleWriteSerializer
 
 
-# 3. Потом остальные ViewSets
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer

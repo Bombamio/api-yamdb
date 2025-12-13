@@ -1,4 +1,4 @@
-from django.db.models import Avg 
+from django.db.models import Avg
 from rest_framework import serializers
 from datetime import datetime
 import re
@@ -6,7 +6,30 @@ import re
 from .models import Category, Genre, Title
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class SlugSerializer(serializers.ModelSerializer):
+    '''Базовый сериализатор для моделей со slug.'''
+
+    class Meta:
+        abstract = True
+
+    def validate_slug(self, value):
+        if not value:
+            return value
+
+        if len(value) > 50:
+            raise serializers.ValidationError(
+                'Slug не может быть длиннее 50 символов.'
+            )
+
+        if not re.match(r'^[-a-zA-Z0-9_]+$', value):
+            raise serializers.ValidationError(
+                'Slug может содержать только буквы, цифры, дефисы и _.'
+            )
+
+        return value
+
+
+class CategorySerializer(SlugSerializer):
     '''Сериализатор для категорий.'''
 
     class Meta:
@@ -15,52 +38,14 @@ class CategorySerializer(serializers.ModelSerializer):
         # НЕ добавляем read_only_fields для slug!
         # Slug должен быть доступен для записи при создании
 
-    def validate_slug(self, value):
-        '''Валидация slug для категории.'''
-        if not value:
-            return value
 
-        # Проверка длины slug
-        if len(value) > 50:
-            raise serializers.ValidationError(
-                'Slug не может быть длиннее 50 символов.'
-            )
-
-        # Проверка паттерна slug
-        if not re.match(r'^[-a-zA-Z0-9_]+$', value):
-            raise serializers.ValidationError(
-                'Slug может содержать только буквы, цифры, -,  подчеркивания.'
-            )
-
-        return value
-
-
-class GenreSerializer(serializers.ModelSerializer):
+class GenreSerializer(SlugSerializer):
     '''Сериализатор для жанров.'''
 
     class Meta:
         model = Genre
         fields = ('name', 'slug')
         # НЕ добавляем read_only_fields для slug!
-
-    def validate_slug(self, value):
-        '''Валидация slug для жанра.'''
-        if not value:
-            return value
-
-        # Проверка длины slug
-        if len(value) > 50:
-            raise serializers.ValidationError(
-                'Slug не может быть длиннее 50 символов.'
-            )
-
-        # Проверка паттерна slug
-        if not re.match(r'^[-a-zA-Z0-9_]+$', value):
-            raise serializers.ValidationError(
-                'Slug может содержать только буквы, цифры, дефисы и _.'
-            )
-
-        return value
 
 
 class TitleReadSerializer(serializers.ModelSerializer):

@@ -8,6 +8,9 @@ from datetime import datetime
 # (при запуске сервера) и не обновляется.
 # В 2025 году нельзя будет добавить произведение 2024 года!
 
+MAX_SLUG_LENGTH = 50
+MAX_NAME_LENGTH = 256
+
 
 class SlugAutoFillMixin:
     '''Миксин для автоматического заполнения slug.'''
@@ -28,11 +31,13 @@ class SlugAutoFillMixin:
 
 class Category(SlugAutoFillMixin, models.Model):
     '''Категории (типы) произведений («Фильмы», «Книги», «Музыка»).'''
-    name = models.CharField("Название категории", max_length=256, unique=True)
+    name = models.CharField(
+        "Название категории", max_length=MAX_NAME_LENGTH, unique=True
+    )
     slug = models.SlugField(
         "Слаг",
         unique=True,
-        max_length=50,
+        max_length=MAX_SLUG_LENGTH,
         blank=True
     )
 
@@ -47,8 +52,10 @@ class Category(SlugAutoFillMixin, models.Model):
 
 class Genre(SlugAutoFillMixin, models.Model):
     '''Жанры произведений.'''
-    name = models.CharField("Название жанра", max_length=256)
-    slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
+    name = models.CharField("Название жанра", max_length=MAX_NAME_LENGTH)
+    slug = models.SlugField(
+        "Слаг", unique=True, max_length=MAX_SLUG_LENGTH, blank=True
+    )
 
     class Meta:
         verbose_name = 'Жанр'
@@ -75,7 +82,9 @@ class Title(models.Model):
         verbose_name="Жанры",
         related_name='titles',
     )
-    name = models.CharField("Название произведения", max_length=256)
+    name = models.CharField(
+        "Название произведения", max_length=MAX_NAME_LENGTH
+    )
     year = models.IntegerField(
         "Год издания",
         validators=[MaxValueValidator(
