@@ -41,16 +41,12 @@ class TitleAdmin(admin.ModelAdmin):
     list_editable = ('category', 'year')
     list_filter = ('year', 'category', 'genre')
     search_fields = ('name', 'description', 'category__name')
-    filter_horizontal = ('genre',)  # Удобный виджет для ManyToMany
     inlines = (GenreTitleInline,)  # Альтернатива filter_horizontal
     readonly_fields = ('rating',)
 
     fieldsets = (
         (None, {
             'fields': ('name', 'year', 'category', 'description')
-        }),
-        ('Жанры', {
-            'fields': ('genre',)
         }),
         ('Дополнительно', {
             'fields': ('rating',),
