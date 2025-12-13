@@ -1,7 +1,7 @@
 # categories/views.py - ПРАВИЛЬНЫЙ ПОРЯДОК
 
 import django_filters
-from rest_framework import viewsets, status, filters, permissions
+from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticatedOrReadOnly

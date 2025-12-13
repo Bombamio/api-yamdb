@@ -1,3 +1,4 @@
+from django.db.models import Avg 
 from rest_framework import serializers
 from datetime import datetime
 import re
@@ -28,7 +29,7 @@ class CategorySerializer(serializers.ModelSerializer):
         # Проверка паттерна slug
         if not re.match(r'^[-a-zA-Z0-9_]+$', value):
             raise serializers.ValidationError(
-                'Slug может содержать только буквы, цифры, дефисы и подчеркивания.'
+                'Slug может содержать только буквы, цифры, -,  подчеркивания.'
             )
 
         return value
@@ -56,7 +57,7 @@ class GenreSerializer(serializers.ModelSerializer):
         # Проверка паттерна slug
         if not re.match(r'^[-a-zA-Z0-9_]+$', value):
             raise serializers.ValidationError(
-                'Slug может содержать только буквы, цифры, дефисы и подчеркивания.'
+                'Slug может содержать только буквы, цифры, дефисы и _.'
             )
 
         return value
@@ -77,8 +78,8 @@ class TitleReadSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'rating')
 
     def get_rating(self, obj):
-        from .utils import calculate_title_rating
-        return calculate_title_rating(obj)
+        avg = obj.reviews.aggregate(Avg('score'))['score__avg']
+        return round(avg, 1) if avg else None  # Округление до 0.1
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):

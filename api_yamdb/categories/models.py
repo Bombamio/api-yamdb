@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from django.core.validators import MaxValueValidator
+from django.db.models import Avg
 from datetime import datetime
 
 # TODO Проблема: datetime.now().year вычисляется при импорте модуля
