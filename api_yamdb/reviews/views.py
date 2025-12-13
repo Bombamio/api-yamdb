@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
 
 from api.permissions import IsAuthorOrModeratorOrAdminOrReadOnly
@@ -25,7 +25,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
         title = self.get_title()
 
         # Проверяем, существует ли уже отзыв
-        if Review.objects.filter(title=title, author=self.request.user).exists():
+        if Review.objects.filter(
+            title=title, author=self.request.user
+        ).exists():
             raise ValidationError(
                 {'detail': 'Вы уже оставили отзыв на это произведение.'}
             )
