@@ -1,7 +1,10 @@
 from django.db.models import Avg
 from django.contrib import admin
-from .models import Category, Genre, Title, GenreTitle
+from categories.models import Category, Genre, Title, GenreTitle
+from reviews.models import Review, Comment
 
+
+# Categories fields.
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -70,3 +73,18 @@ class GenreTitleAdmin(admin.ModelAdmin):
     list_display = ('title', 'genre')
     list_filter = ('genre',)
     search_fields = ('title__name', 'genre__name')
+
+
+# Review fields.
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ('title', 'author', 'score', 'pub_date')
+    list_filter = ('score', 'pub_date')
+    search_fields = ('text', 'author__username', 'title__name')
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('review', 'author', 'pub_date')
+    search_fields = ('text', 'author__username')

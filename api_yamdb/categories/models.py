@@ -1,12 +1,13 @@
 from django.db import models
 from django.utils.text import slugify
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator
 from django.db.models import Avg
 from datetime import datetime
 
-# TODO Проблема: datetime.now().year вычисляется при импорте модуля
-# (при запуске сервера) и не обновляется.
-# В 2025 году нельзя будет добавить произведение 2024 года!
+# Ты перепутал, вот что в redoc написанно:
+# Нельзя добавлять произведения, которые еще не вышли
+# (год выпуска не может быть больше текущего).
 
 MAX_SLUG_LENGTH = 50
 MAX_NAME_LENGTH = 256
@@ -66,6 +67,13 @@ class Genre(SlugAutoFillMixin, models.Model):
         return self.name
 
 
+def validate_year(value):
+    if value > datetime.now().year:
+        raise ValidationError(
+            'Год не может быть больше текущего'
+        )
+
+
 class Title(models.Model):
     '''Произведения, к которым пишут отзывы'''
     category = models.ForeignKey(
@@ -87,10 +95,7 @@ class Title(models.Model):
     )
     year = models.IntegerField(
         "Год издания",
-        validators=[MaxValueValidator(
-            limit_value=lambda: datetime.now().year,
-            message='Год не может быть больше текущего'
-        )]
+        validators=[validate_year]
     )
     description = models.TextField("Описание", null=True, blank=True)
 
