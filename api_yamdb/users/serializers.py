@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 
@@ -34,13 +35,14 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 class UserSignUpSerializer(serializers.Serializer):
     '''Сериализатор для регистрации пользователя.'''
-    email = serializers.EmailField(required=True)
+    email = serializers.EmailField(required=True, max_length=150)
     username = serializers.CharField(
         required=True,
-        max_length=150,
+        max_length=settings.MAX_LENGTH_NAME,
         validators=[RegexValidator(
             regex=r'^[\w.@+-]+\Z',
-            message='Имя пользователя может содержать только буквы, цифры и @/./+/-/_'
+            message=('Имя пользователя может содержать только буквы, '
+                     'цифры и @/./+/-/_')
         )]
     )
 

@@ -1,6 +1,8 @@
-from rest_framework import serializers
-
 from datetime import datetime
+
+from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+from django.conf import settings
 
 from .utils import calculate_title_rating
 from .models import Category, Genre, Title
@@ -9,9 +11,16 @@ from .models import Category, Genre, Title
 class CategorySerializer(serializers.ModelSerializer):
     '''Сериализатор для категорий.'''
 
+    slug = serializers.SlugField(
+        max_length=settings.MAX_LENGTH_SLUG,
+        validators=[
+            UniqueValidator(queryset=Category.objects.all())
+        ]
+    )  # Добавлена проверка уникальности и макс длины.
+
     class Meta:
         model = Category
-        fields = ('id', 'name', 'slug')
+        fields = ('name', 'slug')
         read_only_fields = ('slug',)
 
 

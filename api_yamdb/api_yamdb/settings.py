@@ -12,6 +12,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+PAGE_SIZE_LIMIT = 5
+
+MAX_LENGTH_SLUG = 50
+
+MAX_LENGTH_NAME = 150
+
+MAX_LENGTH_NAME = 256
+
 
 # Application definition
 
@@ -120,6 +128,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': PAGE_SIZE_LIMIT,
 
 }
 

@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.utils.text import slugify
 
 
@@ -9,26 +10,24 @@ class Category(models.Model):
 
     Поля: `name`, `slug`.
     '''
-    name = models.CharField("Название категории", max_length=256)
-    slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
+    name = models.CharField("Название категории",
+                            max_length=settings.MAX_LENGTH_NAME)
+    slug = models.SlugField("Слаг", unique=True,
+                            max_length=settings.MAX_LENGTH_SLUG, blank=True)
 
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
-        # Автоматически генерирует slug из name.
         if not self.slug:
             base_slug = slugify(self.name)
-            slug = slugify(self.name)
+            slug = base_slug
             counter = 1
-            # В цикле проверяет на уникальноть slug.
-            while Genre.objects.filter(slug=slug).exists():
+            while Category.objects.filter(slug=slug).exists():
                 slug = f"{base_slug}-{counter}"
                 counter += 1
-            # Автоматически формировать уникальные slug даже при
-            # одинаковых названиях.
             self.slug = slug
-        super().save(*args, **kwargs)
+        super().save(*args, **kwargs)  # Ошибка save только если нет slug.
 
 
 class Genre(models.Model):
@@ -38,8 +37,10 @@ class Genre(models.Model):
 
     Поля: `name`, `slug`.
     '''
-    name = models.CharField("Название жанра", max_length=256)
-    slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
+    name = models.CharField("Название жанра",
+                            max_length=settings.MAX_LENGTH_NAME)
+    slug = models.SlugField("Слаг", unique=True,
+                            max_length=settings.MAX_LENGTH_SLUG, blank=True)
 
     def __str__(self):
         return self.name
@@ -81,7 +82,8 @@ class Title(models.Model):
         verbose_name="Жанры",
         related_name='titles',
     )
-    name = models.CharField("Название произведения", max_length=256)
+    name = models.CharField("Название произведения",
+                            max_length=settings.MAX_LENGTH_NAME)
     year = models.IntegerField("Год издания")
     description = models.TextField("Описание", null=True, blank=True)
 

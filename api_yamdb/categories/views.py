@@ -1,5 +1,6 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
+from rest_framework.response import Response
 
 from api.permissions import IsAdminOrReadOnly
 from .models import Category, Genre, Title
@@ -16,6 +17,12 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+
+    def update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 # Genre fields.
@@ -36,6 +43,6 @@ class TitleViewSet(viewsets.ModelViewSet):
     '''ViewSet для произведений'''
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields  = ('category__slug', 'genre__slug', 'name', 'year')
