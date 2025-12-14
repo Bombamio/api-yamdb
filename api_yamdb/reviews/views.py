@@ -2,18 +2,16 @@ from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
 
 from api.permissions import IsAuthorOrModeratorOrAdminOrReadOnly
+from rest_framework.exceptions import ValidationError
 from .models import Review, Comment
 from categories.models import Title
 from .serializers import ReviewSerializer, CommentSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    '''ViewSet для отзывов'''
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthorOrModeratorOrAdminOrReadOnly]
-    # По тз сказанно что редактировать и удалять коменты пользователя
-    # могут модеры и админы.
-    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_title(self):
         '''Получаем произведение по ID из URL'''
@@ -24,17 +22,26 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return Review.objects.filter(title=self.get_title())
 
     def perform_create(self, serializer):
-        '''Создание отзыва с автором и произведением'''
+        title = self.get_title()
+
+        # Проверяем, существует ли уже отзыв
+        if Review.objects.filter(
+            title=title, author=self.request.user
+        ).exists():
+            raise ValidationError(
+                {'detail': 'Вы уже оставили отзыв на это произведение.'}
+            )
+
         serializer.save(
             author=self.request.user,
-            title=self.get_title()
+            title=title
         )
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    '''ViewSet для комментариев к отзывам'''
     serializer_class = CommentSerializer
     permission_classes = [IsAuthorOrModeratorOrAdminOrReadOnly]
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_review(self):
         '''Получаем отзыв по ID из URL'''

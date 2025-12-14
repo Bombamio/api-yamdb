@@ -1,72 +1,73 @@
 from django.db import models
 from django.utils.text import slugify
+from django.core.validators import MaxValueValidator
+from django.db.models import Avg
+from datetime import datetime
+
+# TODO Проблема: datetime.now().year вычисляется при импорте модуля
+# (при запуске сервера) и не обновляется.
+# В 2025 году нельзя будет добавить произведение 2024 года!
+
+MAX_SLUG_LENGTH = 50
+MAX_NAME_LENGTH = 256
 
 
-class Category(models.Model):
-    '''
-    Категории (типы) произведений («Фильмы», «Книги», «Музыка»).
-    Одно произведение может быть привязано только к одной категории.
-
-    Поля: `name`, `slug`.
-    '''
-    name = models.CharField("Название категории", max_length=256)
-    slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
-
-    def __str__(self):
-        return self.name
+class SlugAutoFillMixin:
+    '''Миксин для автоматического заполнения slug.'''
 
     def save(self, *args, **kwargs):
-        # Автоматически генерирует slug из name.
         if not self.slug:
             base_slug = slugify(self.name)
-            slug = slugify(self.name)
+            slug = base_slug
             counter = 1
-            # В цикле проверяет на уникальноть slug.
-            while Genre.objects.filter(slug=slug).exists():
+
+            # Используем self.__class__ чтобы работало для любых моделей
+            while self.__class__.objects.filter(slug=slug).exists():
                 slug = f"{base_slug}-{counter}"
                 counter += 1
-            # Автоматически формировать уникальные slug даже при
-            # одинаковых названиях.
             self.slug = slug
         super().save(*args, **kwargs)
 
 
-class Genre(models.Model):
-    '''
-    Жанры произведений. Одно произведение может быть привязано
-    к нескольким жанрам.
+class Category(SlugAutoFillMixin, models.Model):
+    '''Категории (типы) произведений («Фильмы», «Книги», «Музыка»).'''
+    name = models.CharField(
+        "Название категории", max_length=MAX_NAME_LENGTH, unique=True
+    )
+    slug = models.SlugField(
+        "Слаг",
+        unique=True,
+        max_length=MAX_SLUG_LENGTH,
+        blank=True
+    )
 
-    Поля: `name`, `slug`.
-    '''
-    name = models.CharField("Название жанра", max_length=256)
-    slug = models.SlugField("Слаг", unique=True, max_length=50, blank=True)
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+        ordering = ['name']
 
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        # Автоматически генерирует slug из name.
-        if not self.slug:
-            base_slug = slugify(self.name)
-            slug = slugify(self.name)
-            counter = 1
-            # В цикле проверяет на уникальноть slug.
-            while Genre.objects.filter(slug=slug).exists():
-                slug = f"{base_slug}-{counter}"
-                counter += 1
-            # Автоматически формировать уникальные slug даже при
-            # одинаковых названиях.
-            self.slug = slug
-        super().save(*args, **kwargs)
+
+class Genre(SlugAutoFillMixin, models.Model):
+    '''Жанры произведений.'''
+    name = models.CharField("Название жанра", max_length=MAX_NAME_LENGTH)
+    slug = models.SlugField(
+        "Слаг", unique=True, max_length=MAX_SLUG_LENGTH, blank=True
+    )
+
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 
 class Title(models.Model):
-    '''
-    Произведения, к которым пишут отзывы (определённый фильм, книга
-    или песенка).
-
-    Поля: `name`, `year`, `description`, `category`, `genre`, `rating`.
-    '''
+    '''Произведения, к которым пишут отзывы'''
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -81,18 +82,35 @@ class Title(models.Model):
         verbose_name="Жанры",
         related_name='titles',
     )
-    name = models.CharField("Название произведения", max_length=256)
-    year = models.IntegerField("Год издания")
+    name = models.CharField(
+        "Название произведения", max_length=MAX_NAME_LENGTH
+    )
+    year = models.IntegerField(
+        "Год издания",
+        validators=[MaxValueValidator(
+            limit_value=lambda: datetime.now().year,
+            message='Год не может быть больше текущего'
+        )]
+    )
     description = models.TextField("Описание", null=True, blank=True)
+
+    @property
+    def rating(self):
+        '''Вычисляет рейтинг произведения.'''
+        avg = self.reviews.aggregate(Avg('score'))['score__avg']
+        return round(avg, 1) if avg else None  # Округление до 0.1
+
+    class Meta:
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
+        ordering = ['name']
 
     def __str__(self):
         return self.name
 
 
 class GenreTitle(models.Model):
-    '''
-    Класс для поля типа ManyToMany.
-    '''
+    '''Класс для поля типа ManyToMany.'''
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
@@ -106,18 +124,15 @@ class GenreTitle(models.Model):
         verbose_name="Произведения",
     )
 
-    def __str__(self):
-        return f'{self.title.name} - {self.genre.name}'
-
     class Meta:
-        # Проверка на отсутствие дублированияполей `genre` и `title`.
+        verbose_name = 'Жанр произведения'
+        verbose_name_plural = 'Жанры произведений'
         constraints = [
             models.UniqueConstraint(
                 fields=["genre", "title"],
                 name='unique_genre_title'
             ),
-            models.CheckConstraint(
-                check=~models.Q(genre=models.F('title')),
-                name='prevent_self_follow'
-            )
         ]
+
+    def __str__(self):
+        return f'{self.title.name} - {self.genre.name}'
