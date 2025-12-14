@@ -1,19 +1,27 @@
 import django_filters
+
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status, filters
+
+from rest_framework import filters, status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+
 from django_filters.rest_framework import DjangoFilterBackend
 
 from categories.models import Category, Genre, Title
-from reviews.models import Review, Comment
-from .serializers import (
-    CategorySerializer, GenreSerializer,
-    TitleReadSerializer, TitleWriteSerializer,
-    ReviewSerializer, CommentSerializer
-)
+from reviews.models import Comment, Review
+
 from .permissions import (
-    IsAdminOrReadOnly, IsAuthorOrModeratorOrAdminOrReadOnly
+    IsAdminOrReadOnly,
+    IsAuthorOrModeratorOrAdminOrReadOnly,
+)
+from .serializers import (
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    ReviewSerializer,
+    TitleReadSerializer,
+    TitleWriteSerializer,
 )
 
 

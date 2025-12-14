@@ -1,5 +1,5 @@
-from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 User = get_user_model()
@@ -32,7 +32,10 @@ class UserMeSerializer(serializers.ModelSerializer):
                 'max_length': 150,
                 'validators': [RegexValidator(
                     regex=r'^[\w.@+-]+\Z',
-                    message='Имя пользователя может содержать только буквы, цифры и @/./+/-/_'
+                    message=(
+                        'Имя пользователя может содержать только буквы,'
+                        ' цифры и @/./+/-/_'
+                    )
                 )]
             },
             'email': {'max_length': 254},
@@ -58,13 +61,13 @@ class UserMeSerializer(serializers.ModelSerializer):
         if email and email != user.email:
             if User.objects.filter(email=email).exclude(id=user.id).exists():
                 raise serializers.ValidationError({
-                    'email': 'Этот email уже используется другим пользователем.'
+                    'email': 'Этот email уже используется.'
                 })
 
         if username and username != user.username:
             if User.objects.filter(username=username).exclude(id=user.id).exists():
                 raise serializers.ValidationError({
-                    'username': 'Этот username уже используется другим пользователем.'
+                    'username': 'Этот username уже используется.'
                 })
 
         return data
@@ -99,7 +102,10 @@ class UserSignUpSerializer(serializers.Serializer):
         max_length=150,
         validators=[RegexValidator(
             regex=r'^[\w.@+-]+\Z',
-            message='Имя пользователя может содержать только буквы, цифры и @/./+/-/_'
+            message=(
+                'Имя пользователя может содержать только буквы,'
+                ' цифры и @/./+/-/_'
+            )
         )]
     )
 

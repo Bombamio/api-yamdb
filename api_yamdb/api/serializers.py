@@ -1,10 +1,12 @@
-from django.db.models import Avg
-from rest_framework import serializers
 from datetime import datetime
 import re
 
+from django.db.models import Avg
+from rest_framework import serializers
+
 from categories.models import Category, Genre, Title
-from reviews.models import Review, Comment
+from reviews.models import Comment, Review
+
 
 
 # Categories fields.

@@ -1,13 +1,9 @@
-from django.db import models
-from django.utils.text import slugify
-from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator
-from django.db.models import Avg
 from datetime import datetime
 
-# Ты перепутал, вот что в redoc написанно:
-# Нельзя добавлять произведения, которые еще не вышли
-# (год выпуска не может быть больше текущего).
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import Avg
+from django.utils.text import slugify
 
 MAX_SLUG_LENGTH = 50
 MAX_NAME_LENGTH = 256

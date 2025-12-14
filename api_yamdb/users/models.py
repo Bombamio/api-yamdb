@@ -1,6 +1,6 @@
-from django.contrib.auth.models import AbstractUser
-from django.db import models
 from django.core.validators import RegexValidator
+from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 MAX_USERNAME_LENGTH = 150
 MAX_EMAIL_LENGTH = 254
@@ -43,10 +43,10 @@ class User(AbstractUser):
 
     first_name = models.CharField(
         'Имя', max_length=MAX_NAME_LENGTH, blank=True
-        )
+    )
     last_name = models.CharField(
         'Фамилия', max_length=MAX_NAME_LENGTH, blank=True
-        )
+    )
     bio = models.TextField('Биография', blank=True)
 
     role = models.CharField(
