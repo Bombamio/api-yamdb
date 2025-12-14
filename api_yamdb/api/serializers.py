@@ -8,7 +8,6 @@ from categories.models import Category, Genre, Title
 from reviews.models import Comment, Review
 
 
-
 # Categories fields.
 
 class SlugSerializer(serializers.ModelSerializer):

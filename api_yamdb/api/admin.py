@@ -5,7 +5,6 @@ from categories.models import Category, Genre, GenreTitle, Title
 from reviews.models import Comment, Review
 
 
-
 # Categories fields.
 
 @admin.register(Category)

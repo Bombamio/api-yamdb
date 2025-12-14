@@ -65,7 +65,12 @@ class UserMeSerializer(serializers.ModelSerializer):
                 })
 
         if username and username != user.username:
-            if User.objects.filter(username=username).exclude(id=user.id).exists():
+            if (
+                User.objects
+                .filter(username=username)
+                .exclude(id=user.id)
+                .exists()
+            ):
                 raise serializers.ValidationError({
                     'username': 'Этот username уже используется.'
                 })
