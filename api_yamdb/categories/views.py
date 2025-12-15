@@ -22,7 +22,7 @@ class SlugBaseViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'delete', 'head', 'options']
 
     def retrieve(self, request, *args, **kwargs):
-        # Запрещаем GET запросы к конкретному объекту по slug
+        '''Запрещаем GET запросы к конкретному объекту по slug.'''
         if request.method == 'GET':
             return Response(
                 {'detail': 'Method "GET" not allowed.'},
@@ -32,6 +32,7 @@ class SlugBaseViewSet(viewsets.ModelViewSet):
 
 
 class TitleFilter(django_filters.FilterSet):
+    '''Фильтр для произведений.'''
     genre = django_filters.CharFilter(field_name='genre__slug')
     category = django_filters.CharFilter(field_name='category__slug')
     name = django_filters.CharFilter(
@@ -44,7 +45,10 @@ class TitleFilter(django_filters.FilterSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    '''ViewSet для произведений.'''
+    queryset = Title.objects.all().select_related(
+        'category'
+    ).prefetch_related('genre')
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filterset_class = TitleFilter
@@ -52,16 +56,19 @@ class TitleViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_serializer_class(self):
+        '''Выбор сериализатора в зависимости от действия.'''
         if self.action in ('list', 'retrieve'):
             return TitleReadSerializer
         return TitleWriteSerializer
 
 
 class CategoryViewSet(SlugBaseViewSet):
+    '''ViewSet для категорий.'''
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 class GenreViewSet(SlugBaseViewSet):
+    '''ViewSet для жанров.'''
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
