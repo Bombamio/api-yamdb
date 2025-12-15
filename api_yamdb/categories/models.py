@@ -65,7 +65,7 @@ class Genre(SlugAutoFillMixin, models.Model):
         'Название жанра',
         unique=True,
         max_length=MAX_NAME_LENGTH,
-        help_text='Например: Драма, Комедия, Фантастика' 
+        help_text='Например: Драма, Комедия, Фантастика'
     )
     slug = models.SlugField(
         'Слаг',
