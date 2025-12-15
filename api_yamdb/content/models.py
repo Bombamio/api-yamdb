@@ -153,6 +153,8 @@ class Comment(models.Model):
     )
 
     class Meta:
+        verbose_name = 'коментарий'
+        verbose_name_plural = 'Коментарии'
         ordering = ['pub_date']
 
     def __str__(self):

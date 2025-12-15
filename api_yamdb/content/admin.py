@@ -14,7 +14,7 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
     def titles_count(self, obj):
-        return obj.title_set.count()
+        return obj.titles.count()
     titles_count.short_description = 'Количество произведений'
 
 
@@ -30,13 +30,6 @@ class GenreAdmin(admin.ModelAdmin):
     titles_count.short_description = 'Количество произведений'
 
 
-class GenreTitleInline(admin.TabularInline):  # Tabular лучше чем Stacked
-    model = Title.genre.through  # Используем through модель
-    extra = 1
-    verbose_name = 'Жанр'
-    verbose_name_plural = 'Жанры'
-
-
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     list_display = ('name', 'year', 'category', 'rating', 'genres_list')
@@ -44,12 +37,12 @@ class TitleAdmin(admin.ModelAdmin):
     list_editable = ('category', 'year')
     list_filter = ('year', 'category', 'genre')
     search_fields = ('name', 'description', 'category__name')
-    inlines = (GenreTitleInline,)  # Альтернатива filter_horizontal
+    filter_horizontal = ('genre',)
     readonly_fields = ('rating',)
 
     fieldsets = (
         (None, {
-            'fields': ('name', 'year', 'category', 'description')
+            'fields': ('name', 'year', 'category', 'genre', 'description')
         }),
         ('Дополнительно', {
             'fields': ('rating',),
