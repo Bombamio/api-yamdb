@@ -1,9 +1,14 @@
 from django.db.models import Avg
 from rest_framework import serializers
-from datetime import datetime
+from datetime import date
 import re
 
 from .models import Category, Genre, Title
+
+
+def get_current_year():
+    '''Функция для получения текущего года.'''
+    return date.today().year
 
 
 class SlugSerializer(serializers.ModelSerializer):
@@ -13,6 +18,7 @@ class SlugSerializer(serializers.ModelSerializer):
         abstract = True
 
     def validate_slug(self, value):
+        '''Валидация slug.'''
         if not value:
             return value
 
@@ -24,6 +30,7 @@ class SlugSerializer(serializers.ModelSerializer):
         if not re.match(r'^[-a-zA-Z0-9_]+$', value):
             raise serializers.ValidationError(
                 'Slug может содержать только буквы, цифры, дефисы и _.'
+                'Текущее значение: {}'.format(value)
             )
 
         return value
@@ -35,8 +42,6 @@ class CategorySerializer(SlugSerializer):
     class Meta:
         model = Category
         fields = ('name', 'slug')
-        # НЕ добавляем read_only_fields для slug!
-        # Slug должен быть доступен для записи при создании
 
 
 class GenreSerializer(SlugSerializer):
@@ -45,7 +50,6 @@ class GenreSerializer(SlugSerializer):
     class Meta:
         model = Genre
         fields = ('name', 'slug')
-        # НЕ добавляем read_only_fields для slug!
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
@@ -63,6 +67,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'rating')
 
     def get_rating(self, obj):
+        '''Вычисляет рейтинг произведения.'''
         avg = obj.reviews.aggregate(Avg('score'))['score__avg']
         return round(avg, 1) if avg else None  # Округление до 0.1
 
@@ -90,37 +95,38 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
     def validate_year(self, value):
         '''Проверка года выпуска.'''
-        current_year = datetime.now().year
-        if value > current_year:
+        current_year = get_current_year()
+        if not 1000 <= value <= current_year:
             raise serializers.ValidationError(
-                'Нельзя добавлять произведение, которое еще не вышло.'
+                f'Год должен быть в диапазоне от 1000 до {current_year}.'
             )
         return value
 
+    def _handle_genres(self, instance, genres_data):
+        '''Обработка жанров (вынесен в отдельный метод).'''
+        if genres_data is not None:
+            instance.genre.clear()
+            instance.genre.add(*genres_data)
+
     def create(self, validated_data):
-        # Извлекаем жанры из validated_data
+        '''Создание произведения с жанрами.'''
         genres_data = validated_data.pop('genre', [])
         title = Title.objects.create(**validated_data)
-
-        # Добавляем жанры через промежуточную модель
-        for genre in genres_data:
-            title.genre.add(genre)
-
+        self._handle_genres(title, genres_data)
         return title
 
     def update(self, instance, validated_data):
-        # Извлекаем жанры из validated_data
+        '''Обновление произведения с жанрами.'''
         genres_data = validated_data.pop('genre', None)
 
-        # Обновляем поля
+        # Обновляем поля более эффективно
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
-        # Обновляем жанры если они переданы
-        if genres_data is not None:
-            instance.genre.clear()
-            for genre in genres_data:
-                instance.genre.add(genre)
-
+        self._handle_genres(instance, genres_data)
         return instance
+
+    def to_representation(self, instance):
+        '''Используем сериализатор для чтения при выводе.'''
+        return TitleReadSerializer(instance, context=self.context).data
