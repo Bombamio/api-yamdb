@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from .models import User
 # TODO: Модель пользователей получаем через функцию get_user_model
 
+
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     '''Кастомная админка для модели User.'''

@@ -67,14 +67,6 @@ class TitleAdmin(admin.ModelAdmin):
     rating.short_description = 'Рейтинг'
 
 
-# Если нужно отдельно управлять GenreTitle
-@admin.register(GenreTitle)
-class GenreTitleAdmin(admin.ModelAdmin):
-    list_display = ('title', 'genre')
-    list_filter = ('genre',)
-    search_fields = ('title__name', 'genre__name')
-
-
 # Review fields.
 
 @admin.register(Review)
