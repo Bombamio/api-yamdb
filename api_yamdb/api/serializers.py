@@ -55,13 +55,10 @@ class GenreSerializer(SlugSerializer):
 
 class TitleReadSerializer(serializers.ModelSerializer):
     '''Сериализатор для просмотра произведений.'''
-    # TODO: Для этого поля не нужен метод. Используем обычный IntegerField,
-    # задав значение по умолчанию (в соответствии со спецификацией - None).
-    # Вычислять рейтинг мы будем в кверисете при настройке вьюсета
-    # (детали в комментарии к модели к полю rating)
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
-    rating = serializers.SerializerMethodField()
+    rating = serializers.FloatField(read_only=True)
+    # Ревюэр предлагал использовать IntegerField, но я хз.
 
     class Meta:
         model = Title
@@ -69,14 +66,6 @@ class TitleReadSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description',
             'genre', 'category'
         )
-        read_only_fields = ('id', 'rating')
-        # TODO: Лишняя строка.
-        # id - автозаполняемое поле, а поля rating вообще не будет в модели.
-
-    def get_rating(self, obj):
-        # TODO: Лишний метод.
-        avg = obj.reviews.aggregate(Avg('score'))['score__avg']
-        return round(avg, 1) if avg else None  # Округление до 0.1
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):

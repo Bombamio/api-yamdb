@@ -1,5 +1,6 @@
 import django_filters
 
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 
 from rest_framework import filters, status, viewsets
@@ -30,7 +31,7 @@ from .serializers import (
 class SlugBaseViewSet(viewsets.ModelViewSet):
     # TODO: Чтобы не прописывать метод retrieve ниже, используем вместо
     # ModelViewSet при наследовании GenericViewSet и набор миксинов.
-    '''Базовый ViewSet для моделей со slug.'''
+    """Базовый ViewSet для моделей со slug."""
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
@@ -65,9 +66,9 @@ class TitleFilter(django_filters.FilterSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
-    # TODO: Тут надо применить аннотацию, чтобы добавить данные о
-    # рейтинге для всех объектов в кверисете при их получении из БД.
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    )
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filterset_class = TitleFilter
@@ -99,11 +100,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_title(self):
-        '''Получаем произведение по ID из URL'''
+        """Получаем произведение по ID из URL"""
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
 
     def get_queryset(self):
-        '''Получаем отзывы для конкретного произведения'''
+        """Получаем отзывы для конкретного произведения"""
         return Review.objects.filter(title=self.get_title())
         # TODO: Получим отзывы через объект произведения и related_name
 
@@ -131,19 +132,19 @@ class CommentViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_review(self):
-        '''Получаем отзыв по ID из URL'''
+        """Получаем отзыв по ID из URL"""
         return get_object_or_404(Review, id=self.kwargs.get('review_id'))
         # TODO: Необходимо проверить не только id ревью, полученное в
         # запросе, но и id произведения. Добавьте еще один фильтр по id
         # произведения в этот запрос.
 
     def get_queryset(self):
-        '''Получаем комментарии для конкретного отзыва'''
+        """Получаем комментарии для конкретного отзыва"""
         return Comment.objects.filter(review=self.get_review())
         # TODO: Получим комментарии через объект отзыва и related_name
 
     def perform_create(self, serializer):
-        '''Создание комментария с автором'''
+        """Создание комментария с автором"""
         serializer.save(
             author=self.request.user,
             review=self.get_review()

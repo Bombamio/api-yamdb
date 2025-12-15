@@ -2,12 +2,89 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth import get_user_model
 
-from categories.models import Title
+from .mixins import SlugAutoFillMixin
+from .validators import validate_year
+
+
+MAX_SLUG_LENGTH = 50
+MAX_NAME_LENGTH = 256
+
 User = get_user_model()
-# TODO: Стоит добавить одну пустую строку после импортов.
 
 
-# TODO: Давайте все модели добавим в админку.
+# Categories fields.
+
+class AbstractBaseModel(SlugAutoFillMixin, models.Model):
+    """Абстрактная модель для Category и Genre."""
+    name = models.CharField(
+        "Название", max_length=MAX_NAME_LENGTH, unique=True
+    )
+    slug = models.SlugField(
+        "Слаг",
+        unique=True,
+        max_length=MAX_SLUG_LENGTH,
+        blank=True
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class Category(AbstractBaseModel):
+    """Категории (типы) произведений («Фильмы», «Книги», «Музыка»)."""
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
+
+class Genre(AbstractBaseModel):
+    """Жанры произведений."""
+
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
+
+class Title(models.Model):
+    """Произведения, к которым пишут отзывы"""
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        related_name='titles',
+        verbose_name="Категория",
+        null=True,
+        blank=True
+    )
+    genre = models.ManyToManyField(
+        Genre,
+        verbose_name="Жанры",
+        related_name='titles',
+    )
+    name = models.CharField(
+        "Название произведения", max_length=MAX_NAME_LENGTH
+    )
+    year = models.PositiveSmallIntegerField(
+        "Год издания",
+        validators=[validate_year]
+    )
+    description = models.TextField("Описание", null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+# Reviews fields.
+
 class Review(models.Model):
 # TODO: Для всех моделей добавим verbose_name и verbose_name_plural,
 # а также метод __str__

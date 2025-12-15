@@ -4,8 +4,6 @@ from django.db.models import Avg
 from categories.models import Category, Genre, GenreTitle, Title
 from reviews.models import Comment, Review
 
-# TODO: Добавляем модели в админку в том же приложении, где объявлены модели.
-# TODO: Админка не связана напрямую с API
 
 # Categories fields.
 
