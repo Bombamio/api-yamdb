@@ -9,8 +9,7 @@ from rest_framework.response import Response
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from categories.models import Category, Genre, Title
-from reviews.models import Comment, Review
+from content.models import Category, Genre, Title, Comment, Review
 
 from .permissions import (
     IsAdminOrReadOnly,

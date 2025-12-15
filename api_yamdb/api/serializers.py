@@ -4,8 +4,7 @@ import re
 from django.db.models import Avg
 from rest_framework import serializers
 
-from categories.models import Category, Genre, Title
-from reviews.models import Comment, Review
+from content.models import Category, Genre, Title, Comment, Review
 
 
 # Categories fields.
