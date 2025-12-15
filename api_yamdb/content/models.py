@@ -4,10 +4,8 @@ from django.contrib.auth import get_user_model
 
 from .mixins import SlugAutoFillMixin
 from .validators import validate_year
+from . import constants
 
-
-MAX_SLUG_LENGTH = 50
-MAX_NAME_LENGTH = 256
 
 User = get_user_model()
 
@@ -17,12 +15,12 @@ User = get_user_model()
 class AbstractBaseModel(SlugAutoFillMixin, models.Model):
     """Абстрактная модель для Category и Genre."""
     name = models.CharField(
-        "Название", max_length=MAX_NAME_LENGTH, unique=True
+        "Название", max_length=constants.MAX_NAME_LENGTH, unique=True
     )
     slug = models.SlugField(
         "Слаг",
         unique=True,
-        max_length=MAX_SLUG_LENGTH,
+        max_length=constants.MAX_SLUG_LENGTH,
         blank=True
     )
 
@@ -66,7 +64,7 @@ class Title(models.Model):
         related_name='titles',
     )
     name = models.CharField(
-        "Название произведения", max_length=MAX_NAME_LENGTH
+        "Название произведения", max_length=constants.MAX_NAME_LENGTH
     )
     year = models.PositiveSmallIntegerField(
         "Год издания",
@@ -86,27 +84,19 @@ class Title(models.Model):
 # Reviews fields.
 
 class Review(models.Model):
-# TODO: Для всех моделей добавим verbose_name и verbose_name_plural,
-# а также метод __str__
-    '''
+    """
     Отзывы на произведения. Отзыв привязан к определённому произведению.
 
     Поля: `text`, `score`, `author`, `pub_date`, `title`.
-    '''
-    # TODO: Тут и ниже:
-    # В докстрингах всегда используются тройные двойные кавычки: """ ... """
-    text = models.TextField("Текст отзыва")
-    score = models.IntegerField(
-    # TODO: Подберем более удачный тип поля.
-    # Стоит участь, что в данном поле хранятся маленькие положительные числа.
-        "Оценка произвидения",
-        validators=[MinValueValidator(1), MaxValueValidator(10)],
-        # TODO: Все статичные ограничения (макс. длина, границы значения полей)
-        # убираем в константы. Для констант в каждом приложении заведем
-        # файл - constants.py
-        help_text='Оценка от 1 до 10'
-        # TODO: Текст сформируем через f-строку, чтобы при изменении
-        # границ он автоматически подстраивался.
+    """
+    text = models.TextField('Текст отзыва')
+    score = models.PositiveSmallIntegerField(
+        'Оценка произвидения',
+        validators=[
+            MinValueValidator(constants.MIN_VALUE),
+            MaxValueValidator(constants.MAX_VALUE)
+        ],
+        help_text=f'Оценка от {constants.MIN_VALUE} до {constants.MAX_VALUE}'
     )
     author = models.ForeignKey(
         User,
@@ -115,51 +105,51 @@ class Review(models.Model):
         verbose_name="Автор отзыва"
     )
     pub_date = models.DateTimeField(
-        "Дата публикации",
+        'Дата публикации',
         auto_now_add=True,
     )
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
         related_name='reviews',
-        verbose_name="Произведение"
+        verbose_name='Произведение'
     )
 
     class Meta:
         # Один пользователь - один отзыв на произведение
         constraints = [
             models.UniqueConstraint(
-            # Отлично: Верно! Такие ограничения всегда стоит дублировать
-            # на уровне БД.
                 fields=['title', 'author'],
                 name='unique_review_per_title_and_author'
             )
         ]
+        verbose_name = 'отзыв'
+        verbose_name_plural = 'Отзывы'
         ordering = ['-pub_date']
 
 
 class Comment(models.Model):
-    '''
+    """
     Комментарии к отзывам. Комментарий привязан к определённому отзыву.
 
     Поля: `text`, `author`, `pub_date`, `review`.
-    '''
-    text = models.TextField("Текст комментария")
+    """
+    text = models.TextField('Текст комментария')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name="Автор комментария"
+        verbose_name='Автор комментария'
     )
     pub_date = models.DateTimeField(
-        "Дата публикации",
+        'Дата публикации',
         auto_now_add=True,
     )
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name="Отзыв"
+        verbose_name='Отзыв'
     )
 
     class Meta:
