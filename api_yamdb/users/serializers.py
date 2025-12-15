@@ -4,6 +4,8 @@ from rest_framework import serializers
 
 User = get_user_model()
 
+# TODO: Раз у нас есть приложение api, то все, что связано с API
+# (сериализаторы, урлы и пр), уберем туда.
 
 class UserSerializer(serializers.ModelSerializer):
     '''Сериализатор для модели User.'''
@@ -14,6 +16,8 @@ class UserSerializer(serializers.ModelSerializer):
                   'last_name', 'bio', 'role')
         read_only_fields = ('email', 'username')
         extra_kwargs = {
+        # TODO: Лишнее. Настройки полей модельный сериализатор подтянет из
+        # моделей.
             'role': {'required': False},
             'first_name': {'max_length': 150},
             'last_name': {'max_length': 150},
@@ -22,9 +26,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(serializers.ModelSerializer):
+    # TODO: Наследуюемся от UserSerializer
     '''Сериализатор для изменения профиля через /me/.'''
 
     class Meta:
+    # TODO: Тут наследуемся от UserSerializer.Meta.
+    # Внутри подкласса оставляем одну строку, в которой пропишем
+    # read_obly_fields, где укажем поле role.
+    # Все остальные настройки модельный сериализатор возьмет из модели.
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'bio')
         extra_kwargs = {
@@ -45,6 +54,7 @@ class UserMeSerializer(serializers.ModelSerializer):
         }
 
     def validate_username(self, value):
+    # TODO: В этом классе валидаторы прописывать не понадобится.
         '''Запрещает имя пользователя "me".'''
         if value and value.lower() == 'me':
             raise serializers.ValidationError(
@@ -79,6 +89,8 @@ class UserMeSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
+# TODO: Лишний класс. Для манипуляций с пользователями нам хватит двух
+# классов выше + сериализатор для регистрации.
     '''Сериализатор для создания пользователя администратором.'''
 
     class Meta:
@@ -102,10 +114,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class UserSignUpSerializer(serializers.Serializer):
     '''Сериализатор для регистрации пользователя.'''
     email = serializers.EmailField(required=True, max_length=254)
+    # TODO: Длину полей берем из констант.
     username = serializers.CharField(
         required=True,
         max_length=150,
         validators=[RegexValidator(
+        # TODO: Тут используем тот же набор валидаторов, что и в модели.
             regex=r'^[\w.@+-]+\Z',
             message=(
                 'Имя пользователя может содержать только буквы,'
@@ -150,3 +164,5 @@ class TokenObtainSerializer(serializers.Serializer):
     '''Сериализатор для получения JWT токена.'''
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
+
+# TODO: Валидацию кода подтверждения уберем в этот сериализатор.

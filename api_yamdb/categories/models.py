@@ -5,14 +5,21 @@ from django.db import models
 from django.db.models import Avg
 from django.utils.text import slugify
 
+# TODO: Не вижу смысла отделять эти модели от моделей в приложении reviews.
+# Давайте объединим эти приложения в одно.
 MAX_SLUG_LENGTH = 50
 MAX_NAME_LENGTH = 256
 
 
+# TODO: Все модели добавим в админку.
 class SlugAutoFillMixin:
+    # TODO: Вспомогательный инструмент уберем в отдельный файл.
     '''Миксин для автоматического заполнения slug.'''
+    # TODO: Тут и ниже:
+    # В докстрингах всегда используются тройные двойные кавычки: """ ... """
 
     def save(self, *args, **kwargs):
+    # Отлично: Доп. функционал
         if not self.slug:
             base_slug = slugify(self.name)
             slug = base_slug
@@ -48,6 +55,9 @@ class Category(SlugAutoFillMixin, models.Model):
 
 
 class Genre(SlugAutoFillMixin, models.Model):
+# TODO: Модели категорий и жанров очень похожи. Чтобы не дублировать
+# настройки полей, создадим абстрактную модель, где прописать эти
+# настройки, и будем наследоваться от нее.
     '''Жанры произведений.'''
     name = models.CharField("Название жанра", max_length=MAX_NAME_LENGTH)
     slug = models.SlugField(
@@ -64,11 +74,15 @@ class Genre(SlugAutoFillMixin, models.Model):
 
 
 def validate_year(value):
+# TODO: Валидаторы тоже убираем в отдельный файл.
     if value > datetime.now().year:
         raise ValidationError(
             'Год не может быть больше текущего'
         )
 
+# Можно лучше: Лучше привыкать возвращать из валидаторов проверяемое
+# значение, если проверка прошла успешно. В случае с функцией это не
+# критично, не если не сделать это в валидирующем методе, получим ошибку.
 
 class Title(models.Model):
     '''Произведения, к которым пишут отзывы'''
@@ -90,6 +104,8 @@ class Title(models.Model):
         "Название произведения", max_length=MAX_NAME_LENGTH
     )
     year = models.IntegerField(
+    # TODO: Давайте подберем более подходящий тип поля.
+    # Учтем, что в нем хранятся маленькие числа.
         "Год издания",
         validators=[validate_year]
     )
@@ -97,6 +113,13 @@ class Title(models.Model):
 
     @property
     def rating(self):
+    # TODO: Такой подход породит множество запросов в БД (отдельный
+    # запрос для каждого элемента QuerySet).
+    # Нужно изменить подход: добавьте атрибут rating для всех элементов
+    # QuerySet путем его аннотирования во вью.
+    # Документация для annotate и для Avg
+    # https://docs.djangoproject.com/en/4.1/ref/models/querysets/#django.db.models.query.QuerySet.annotate
+    # https://docs.djangoproject.com/en/5.1/ref/models/querysets/#avg
         '''Вычисляет рейтинг произведения.'''
         avg = self.reviews.aggregate(Avg('score'))['score__avg']
         return round(avg, 1) if avg else None  # Округление до 0.1
@@ -111,6 +134,12 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
+# TODO: Лишняя модель.
+# С созданием промежуточной таблицы для м2м связи Django справится
+# самостоятельно.
+# Такие модели имеет смысл прописывать, когда мы хотим расширить
+# промежуточную таблицу или еще каким-то образом ее донастроить.
+# В данном проекте особого смысла объявлять ее явно нет.
     '''Класс для поля типа ManyToMany.'''
     genre = models.ForeignKey(
         Genre,

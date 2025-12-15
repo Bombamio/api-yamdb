@@ -28,6 +28,8 @@ from .serializers import (
 # Categories fields.
 
 class SlugBaseViewSet(viewsets.ModelViewSet):
+    # TODO: Чтобы не прописывать метод retrieve ниже, используем вместо
+    # ModelViewSet при наследовании GenericViewSet и набор миксинов.
     '''Базовый ViewSet для моделей со slug.'''
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
@@ -46,11 +48,16 @@ class SlugBaseViewSet(viewsets.ModelViewSet):
 
 
 class TitleFilter(django_filters.FilterSet):
+    # TODO: Фильтры убираем в отдельный файл - filters.py
     genre = django_filters.CharFilter(field_name='genre__slug')
     category = django_filters.CharFilter(field_name='category__slug')
     name = django_filters.CharFilter(
         field_name='name', lookup_expr='icontains')
+        # Можно лучше: Удачная настройка lookup_expr. Такая же подойдет
+        # и для двух полей выше.
     year = django_filters.NumberFilter(field_name='year')
+    # TODO: Это поле прописывать не надо. FilterSet справится с ним сам,
+    # достаточно добавить его в перечень fields
 
     class Meta:
         model = Title
@@ -59,6 +66,8 @@ class TitleFilter(django_filters.FilterSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
+    # TODO: Тут надо применить аннотацию, чтобы добавить данные о
+    # рейтинге для всех объектов в кверисете при их получении из БД.
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filterset_class = TitleFilter
@@ -72,6 +81,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class CategoryViewSet(SlugBaseViewSet):
+    # Отлично: Повторяющиеся настройки вынесены в базовый класс.
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -95,12 +105,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         '''Получаем отзывы для конкретного произведения'''
         return Review.objects.filter(title=self.get_title())
+        # TODO: Получим отзывы через объект произведения и related_name
 
     def perform_create(self, serializer):
         title = self.get_title()
 
         # Проверяем, существует ли уже отзыв
         if Review.objects.filter(
+        # TODO: Валидация убираем в сериализатор.
             title=title, author=self.request.user
         ).exists():
             raise ValidationError(
@@ -121,10 +133,14 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_review(self):
         '''Получаем отзыв по ID из URL'''
         return get_object_or_404(Review, id=self.kwargs.get('review_id'))
+        # TODO: Необходимо проверить не только id ревью, полученное в
+        # запросе, но и id произведения. Добавьте еще один фильтр по id
+        # произведения в этот запрос.
 
     def get_queryset(self):
         '''Получаем комментарии для конкретного отзыва'''
         return Comment.objects.filter(review=self.get_review())
+        # TODO: Получим комментарии через объект отзыва и related_name
 
     def perform_create(self, serializer):
         '''Создание комментария с автором'''

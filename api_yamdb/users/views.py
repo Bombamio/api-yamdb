@@ -25,11 +25,16 @@ User = get_user_model()
 
 
 def generate_confirmation_code():
+# TODO: Генерато уберем в отдельный файл или статический метод модели.
     '''Генерирует 6-значный код подтверждения.'''
     return ''.join(str(random.randint(0, 9)) for _ in range(6))
 
 
 class CustomPagination(PageNumberPagination):
+# TODO: Лишний класс.
+# Давайте пропишем настройки пагинации в settings.py. Включим пагинацию
+# по умолчанию, т.к. она нужна во всех вьюсетах в этом проекте.
+# Используем PageNumberPagination
     '''Кастомная пагинация.'''
     page_size = 10
     page_size_query_param = 'limit'
@@ -54,6 +59,9 @@ class UserViewSet(viewsets.ModelViewSet):
         return UserSerializer
 
     def create(self, request, *args, **kwargs):
+    # TODO: Лишнее.
+    # Админ может создать пользователя, а для получения токена
+    # пользователь используем общие эндпоинты auth/
         '''Создание пользователя администратором.'''
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -83,6 +91,12 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
         elif request.method == 'PATCH':
+        # TODO: Лишняя проверка.
+        # Мы ограничили используемые методы в 76 строка и один из них
+        # обработали выше (в конце блока if есть return, который прервет
+        # исполнение кода).
+        # До сюда интерпретатор доберется и так, только если получен
+        # метод PATCH
             serializer = UserMeSerializer(
                 request.user,
                 data=request.data,
@@ -107,6 +121,15 @@ class SignUpView(APIView):
         username = data['username']
 
         user, created = User.objects.get_or_create(
+        # TODO: Всю логику создания нового объекта и отправки кода
+        # подтверждения заберем в метод create сериализатора.
+        # В нем создаем/получаем пользователя через метод get_or_create,
+        # используя полученные в запросе данные, формируем код
+        # подтверждения и отправляем его пользователю.
+        # Из метода возвращаем объект пользователя.
+        # При обработке запроса нам останется только создать
+        # сериализатор, проверить валидности (is_valid), вызовать метод
+        # сериализатора save и вернуть ответ пользователю.
             email=email,
             username=username,
             defaults={'is_active': True}
@@ -125,6 +148,7 @@ class SignUpView(APIView):
 
         return Response(
             {'email': email, 'username': username},
+            # TODO: Отдаем serializer.data
             status=status.HTTP_200_OK
         )
 

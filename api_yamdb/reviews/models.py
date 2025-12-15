@@ -4,19 +4,32 @@ from django.contrib.auth import get_user_model
 
 from categories.models import Title
 User = get_user_model()
+# TODO: Стоит добавить одну пустую строку после импортов.
 
 
+# TODO: Давайте все модели добавим в админку.
 class Review(models.Model):
+# TODO: Для всех моделей добавим verbose_name и verbose_name_plural,
+# а также метод __str__
     '''
     Отзывы на произведения. Отзыв привязан к определённому произведению.
 
     Поля: `text`, `score`, `author`, `pub_date`, `title`.
     '''
+    # TODO: Тут и ниже:
+    # В докстрингах всегда используются тройные двойные кавычки: """ ... """
     text = models.TextField("Текст отзыва")
     score = models.IntegerField(
+    # TODO: Подберем более удачный тип поля.
+    # Стоит участь, что в данном поле хранятся маленькие положительные числа.
         "Оценка произвидения",
         validators=[MinValueValidator(1), MaxValueValidator(10)],
+        # TODO: Все статичные ограничения (макс. длина, границы значения полей)
+        # убираем в константы. Для констант в каждом приложении заведем
+        # файл - constants.py
         help_text='Оценка от 1 до 10'
+        # TODO: Текст сформируем через f-строку, чтобы при изменении
+        # границ он автоматически подстраивался.
     )
     author = models.ForeignKey(
         User,
@@ -39,6 +52,8 @@ class Review(models.Model):
         # Один пользователь - один отзыв на произведение
         constraints = [
             models.UniqueConstraint(
+            # Отлично: Верно! Такие ограничения всегда стоит дублировать
+            # на уровне БД.
                 fields=['title', 'author'],
                 name='unique_review_per_title_and_author'
             )

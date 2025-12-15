@@ -11,6 +11,8 @@ from reviews.models import Comment, Review
 # Categories fields.
 
 class SlugSerializer(serializers.ModelSerializer):
+    # TODO:Лишний класс.
+    # Все валадации модельный сериализатор подтянет из модели.
     '''Базовый сериализатор для моделей со slug.'''
 
     class Meta:
@@ -35,6 +37,8 @@ class SlugSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(SlugSerializer):
     '''Сериализатор для категорий.'''
+    # TODO: Во всем проекте:
+    # В докстрингах всегда используются тройные двойные кавычки: """ ... """
 
     class Meta:
         model = Category
@@ -51,6 +55,10 @@ class GenreSerializer(SlugSerializer):
 
 class TitleReadSerializer(serializers.ModelSerializer):
     '''Сериализатор для просмотра произведений.'''
+    # TODO: Для этого поля не нужен метод. Используем обычный IntegerField,
+    # задав значение по умолчанию (в соответствии со спецификацией - None).
+    # Вычислять рейтинг мы будем в кверисете при настройке вьюсета
+    # (детали в комментарии к модели к полю rating)
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField()
@@ -62,8 +70,11 @@ class TitleReadSerializer(serializers.ModelSerializer):
             'genre', 'category'
         )
         read_only_fields = ('id', 'rating')
+        # TODO: Лишняя строка.
+        # id - автозаполняемое поле, а поля rating вообще не будет в модели.
 
     def get_rating(self, obj):
+        # TODO: Лишний метод.
         avg = obj.reviews.aggregate(Avg('score'))['score__avg']
         return round(avg, 1) if avg else None  # Округление до 0.1
 
@@ -77,6 +88,9 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         allow_null=True
     )
     genre = serializers.SlugRelatedField(
+        # TODO: Чтобы запрос без жанров не прошел валидацию надо
+        # добавить два параметра для этого поля: allow_null и allow_empty.
+        # Значением для обоих будет False.
         slug_field='slug',
         many=True,
         queryset=Genre.objects.all()
@@ -90,6 +104,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         )
 
     def validate_year(self, value):
+        # TODO: Валидация подтянется из настроек поля в модели.
         '''Проверка года выпуска.'''
         current_year = datetime.now().year
         if value > current_year:
@@ -97,6 +112,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
                 'Нельзя добавлять произведение, которое еще не вышло.'
             )
         return value
+# TODO: Этот и следующий метод лишние.
 
     def create(self, validated_data):
         # Извлекаем жанры из validated_data
@@ -126,13 +142,25 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
         return instance
 
+# TODO: Чтобы получить ответ, соответствующий спецификации, надо
+# переопределить метод to_representation, в котором передать созданный
+# объект в сериализатор для чтения произведений и вернуть атрибут data
+# получившегося объекта сериализатора.
+
 
 # Review fields.
 
 class ReviewSerializer(serializers.ModelSerializer):
     '''Сериализатор для отзывов.'''
     author = serializers.StringRelatedField(read_only=True)
+    # TODO: Неудачный выбор типа. Фактически тебе случайно повезло, что
+    # он подходит, так как мы не контролируем преобразование в строку для
+    # объектов типа User. Нужен другой.
+    # Посмотри в сторону SlugRelatedField. У него можно явно указать из
+    # какого поля брать значение.
     score = serializers.IntegerField(
+        # TODO: Это поле явно прописывать не надо. Настройки подтянется
+        # из модели.
         min_value=1,
         max_value=10,
         help_text="Оценка от 1 до 10"
@@ -142,16 +170,22 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         read_only_fields = ('id', 'author', 'pub_date')
+        # TODO: Лишняя строка.
+        # id и pub_date являются автозаполняемыми и доступны только для
+        # чтения по умолчанию, а для поля автор соответствующее свойство
+        # мы включили в 134 строке.
 
 
 class CommentSerializer(serializers.ModelSerializer):
     '''Сериализатор для комментариев.'''
     author = serializers.StringRelatedField(read_only=True)
+    # TODO: См. комментарий к 155 строке
 
     class Meta:
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date')
         read_only_fields = ('id', 'author', 'pub_date')
+        # TODO: Лишняя строка.
         extra_kwargs = {
             'text': {'help_text': 'Текст комментария'}
         }
