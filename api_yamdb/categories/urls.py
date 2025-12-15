@@ -12,3 +12,5 @@ router.register(r'titles', TitleViewSet, basename='titles')
 urlpatterns = [
     path('', include(router.urls)),
 ]
+
+app_name = 'categories'
