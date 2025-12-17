@@ -134,7 +134,10 @@ class Comment(models.Model):
 
     Поля: `text`, `author`, `pub_date`, `review`.
     """
-    text = models.TextField('Текст комментария')
+    text = models.TextField(
+        'Текст комментария',
+        help_text='Текст комментария'
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.contrib.auth.validators import UnicodeUsernameValidator
 
 
 def validate_username(value):
@@ -8,3 +9,11 @@ def validate_username(value):
             'Имя пользователя "me" не разрешено'
         )
     return value
+
+
+username_validator = UnicodeUsernameValidator(
+    message=(
+        'Имя пользователя может содержать только буквы, цифры и '
+        '@/./+/-/_'
+    )
+)

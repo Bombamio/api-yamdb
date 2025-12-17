@@ -1,10 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import gettext_lazy as _
 
 from . import constants
-from .validators import validate_username
+from .validators import validate_username, username_validator
 
 
 class User(AbstractUser):
@@ -14,13 +13,6 @@ class User(AbstractUser):
         USER = 'user', _('Пользователь')
         MODERATOR = 'moderator', _('Модератор')
         ADMIN = 'admin', _('Администратор')
-
-    username_validator = UnicodeUsernameValidator(
-        message=(
-            'Имя пользователя может содержать только буквы, цифры и '
-            '@/./+/-/_'
-        )
-    )
 
     username = models.CharField(
         'Имя пользователя',
@@ -41,12 +33,19 @@ class User(AbstractUser):
     )
 
     first_name = models.CharField(
-        'Имя', max_length=constants.MAX_NAME_LENGTH, blank=True
+        'Имя',
+        max_length=constants.MAX_NAME_LENGTH,
+        blank=True
     )
     last_name = models.CharField(
-        'Фамилия', max_length=constants.MAX_NAME_LENGTH, blank=True
+        'Фамилия',
+        max_length=constants.MAX_NAME_LENGTH,
+        blank=True
     )
-    bio = models.TextField('Биография', blank=True)
+    bio = models.TextField(
+        'Биография',
+        blank=True,
+    )
 
     role = models.CharField(
         'Роль',
@@ -54,19 +53,6 @@ class User(AbstractUser):
         choices=UserRoles.choices,
         default=UserRoles.USER,
         help_text='Роль определяет права доступа'
-    )
-
-    confirmation_code = models.CharField(
-    # Можно лучше: Можно не хранить код подтверждения в БД, если
-    # использовать default_token_generator из django.contrib.auth.tokens.
-    # У этого объекта есть два метода: для генерации токена - make_token
-    # и для проверки полученного токена  - check_token (оба метода
-    # принимают на вход объект пользователя).
-        'Код подтверждения',
-        max_length=6,
-        blank=True,
-        null=True,
-        editable=False
     )
 
     class Meta:
@@ -80,8 +66,8 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         """Проверяет, является ли пользователь администратором."""
-        return self.role == (
-            self.UserRoles.ADMIN
+        return (
+            self.role == self.UserRoles.ADMIN
             or self.is_superuser
             or self.is_staff
         )
