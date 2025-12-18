@@ -1,12 +1,13 @@
 from rest_framework import serializers
 from django.conf import settings
 from django.core.mail import send_mail
-from content.models import Category, Genre, Title, Comment, Review
+from reviews.models import Category, Genre, Title, Comment, Review
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import serializers
-from django.shortcuts import get_object_or_404
 from . import constants
+from django.shortcuts import get_object_or_404
+from users.validators import validate_username, username_validator
 
 
 User = get_user_model()
@@ -91,7 +92,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         request = self.context['request']
         title_id = self.context['view'].kwargs.get('title_id')
-        if request.method == 'POSt':
+        if request.method == 'POST':
             if Review.objects.filter(
                 title_id=title_id,
                 author=request.user
@@ -121,9 +122,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name',
-                  'last_name', 'bio', 'role')
-        read_only_fields = ('email', 'username')
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
 
 
 class UserMeSerializer(UserSerializer):
@@ -142,6 +143,7 @@ class UserSignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
         required=True,
         max_length=constants.MAX_NAME_LENGTH,
+        validators=[validate_username, username_validator],
     )
 
     def validate_username(self, value):
@@ -157,20 +159,19 @@ class UserSignUpSerializer(serializers.Serializer):
         email = data.get('email')
         username = data.get('username')
 
-        email_user = User.objects.filter(email=email).first()
-        username_user = User.objects.filter(username=username).first()
+        user_by_email = User.objects.filter(email=email).first()
+        user_by_username = User.objects.filter(username=username).first()
 
-        if email_user and username_user and email_user != username_user:
+        if user_by_email and user_by_username:
+            if user_by_email != user_by_username:
+                raise serializers.ValidationError(
+                    'Email и username принадлежат разным пользователям'
+                )
+            return data
+
+        if user_by_email or user_by_username:
             raise serializers.ValidationError(
                 'Пользователь с таким email или username уже существует'
-            )
-        elif email_user and email_user.username != username:
-            raise serializers.ValidationError(
-                'Пользователь с таким email уже существует'
-            )
-        elif username_user and username_user.email != email:
-            raise serializers.ValidationError(
-                'Пользователь с таким username уже существует'
             )
 
         return data

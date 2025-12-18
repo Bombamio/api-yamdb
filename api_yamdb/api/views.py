@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from content.models import Category, Genre, Title, Review
+from reviews.models import Category, Genre, Title, Review
 
 from .permissions import (
     IsAdmin,
@@ -165,6 +165,7 @@ class SignUpView(APIView):
         '''Обработка POST-запроса.'''
         serializer = UserSignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
