@@ -1,17 +1,14 @@
-"""Модуль загрузки из csv в модели проекта."""
-
 import csv
 from datetime import datetime
 from pathlib import Path
 
-from django.core.management.base import BaseCommand
 from django.conf import settings
-from django.db.utils import IntegrityError
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.core.management.base import BaseCommand
+from django.db.utils import IntegrityError
 
-from reviews.models import Category, Genre, Title
-from reviews.models import Review, Comment
+from reviews.models import Category, Comment, Genre, Review, Title
 
 
 DIR_CSV_FILES = Path(settings.STATICFILES_DIRS[0]) / 'data'

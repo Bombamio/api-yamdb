@@ -1,4 +1,5 @@
 from django.urls import include, path
+
 from rest_framework.routers import DefaultRouter
 
 from .views import (
@@ -6,8 +7,8 @@ from .views import (
     CommentViewSet,
     GenreViewSet,
     ReviewViewSet,
-    TitleViewSet,
     SignUpView,
+    TitleViewSet,
     TokenObtainView,
     UserViewSet,
 )
@@ -37,7 +38,7 @@ router_v1.register('users', UserViewSet, basename='users')
 
 
 urlpatterns = [
-    path('auth/signup/', SignUpView.as_view(), name='signup'),
-    path('auth/token/', TokenObtainView.as_view(), name='token'),
-    path('', include(router_v1.urls)),
+    path('v1/auth/signup/', SignUpView.as_view(), name='signup'),
+    path('v1/auth/token/', TokenObtainView.as_view(), name='token'),
+    path('v1/', include(router_v1.urls)),
 ]

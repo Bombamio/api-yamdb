@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db.models import Avg
 
-from .models import Category, Genre, Title, Comment, Review
+from .models import Category, Comment, Genre, Review, Title
 
 
 # Categories fields.

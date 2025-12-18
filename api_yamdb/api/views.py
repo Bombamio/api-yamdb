@@ -2,16 +2,17 @@ from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 
-from rest_framework import filters, viewsets, mixins, permissions, status
+from django_filters.rest_framework import DjangoFilterBackend
+
+from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from django_filters.rest_framework import DjangoFilterBackend
+from reviews.models import Category, Genre, Review, Title
 
-from reviews.models import Category, Genre, Title, Review
-
+from .filters import TitleFilter
 from .permissions import (
     IsAdmin,
     IsAdminOrReadOnly,
@@ -29,7 +30,6 @@ from .serializers import (
     UserSerializer,
     UserSignUpSerializer,
 )
-from .filters import TitleFilter
 
 
 User = get_user_model()

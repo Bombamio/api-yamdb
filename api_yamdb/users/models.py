@@ -1,9 +1,9 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from . import constants
-from .validators import validate_username, username_validator
+from .validators import username_validator, validate_username
 
 
 class User(AbstractUser):

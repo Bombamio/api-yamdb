@@ -1,13 +1,15 @@
-from rest_framework import serializers
 from django.conf import settings
-from django.core.mail import send_mail
-from reviews.models import Category, Genre, Title, Comment, Review
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
-from rest_framework import serializers
-from . import constants
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from users.validators import validate_username, username_validator
+
+from rest_framework import serializers
+
+from reviews.models import Category, Comment, Genre, Review, Title
+from users.validators import username_validator, validate_username
+
+from . import constants
 
 
 User = get_user_model()

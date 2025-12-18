@@ -4,9 +4,7 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/', include('api.urls')),
-    # TODO: Какие версии будут поддерживаться, обязано знать только
-    # приложение api. Нужно перенести v1/ внутрь приложения.
+    path('api/', include('api.urls')),
     path(
         'redoc/',
         TemplateView.as_view(template_name='redoc.html'),

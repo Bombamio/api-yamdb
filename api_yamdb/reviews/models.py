@@ -1,10 +1,10 @@
-from django.db import models
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
+from . import constants
 from .mixins import SlugAutoFillMixin
 from .validators import validate_year
-from . import constants
 
 
 User = get_user_model()
