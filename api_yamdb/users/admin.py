@@ -1,13 +1,14 @@
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.utils.translation import gettext_lazy as _
 
-from .models import User
+
+User = get_user_model()
 
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    '''Кастомная админка для модели User.'''
+    """Кастомная админка для модели User."""
 
     # Поля для списка пользователей
     list_display = ('username', 'email', 'first_name',
@@ -17,13 +18,13 @@ class UserAdmin(BaseUserAdmin):
 
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        (_('Personal info'), {
+        ('Personal info', {
          'fields': ('first_name', 'last_name', 'email', 'bio')}),
-        (_('Permissions'), {
+        ('Permissions', {
             'fields': ('role', 'is_active', 'is_staff', 'is_superuser',
                        'groups', 'user_permissions'),
         }),
-        (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
 
     add_fieldsets = (

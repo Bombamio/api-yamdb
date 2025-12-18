@@ -200,48 +200,71 @@ GET /api/v1/titles/?category=films&genre=action&year=2023&name=война
 
 Клонировать репозиторий и перейти в него в командной строке:
 
-```
+```bash
 git clone https://github.com/Bombamio/api-final-yatube.git
 ```
 
-```
+```bash
 cd yatube_api
 ```
 
 Cоздать и активировать виртуальное окружение:
 
-```
+```bash
 python3 -m venv env
 ```
 
-```
+```bash
 source env/bin/activate
 ```
 
 Установить зависимости из файла requirements.txt:
 
-```
+```bash
 python3 -m pip install --upgrade pip
 ```
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
 Выполнить миграции:
 
-```
+```bash
 python3 manage.py migrate
 ```
 
 Запустить проект:
 
-```
+```bash
 python3 manage.py runserver
 ```
 
 ---
 
+# Загрузка данных из CSV в базу данных
+
+В проекте предусмотрен скрипт для загрузки данных из CSV-файлов в базу данных Django.
+
+---
+
+# Запуск скрипта
+
+Для загрузки данных выполните команду:
+
+```bash
+python3 manage.py load_data
+```
+
+> Команда последовательно загружает данные из всех CSV-файлов в базу данных.
+
+---
+
+# Примечание
+
+При повторном запуске команды уже существующие записи в базе данных не дублируются.
+
+---
 ## Авторы проекта
 
 Евсей Илья - [Bombamio](https://github.com/Bombamio)
