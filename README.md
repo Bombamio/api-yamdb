@@ -267,6 +267,6 @@ python3 manage.py load_data
 ---
 ## Авторы проекта
 
-Евсей Илья - [Bombamio](https://github.com/Bombamio)
-Дончев Юрий - [KaRaNDaIiIK](https://github.com/KaRaNDaIiIK)
-Колесниченко Алексей - [AlekseyKolesnichenko](https://github.com/AlekseyKolesnichenko)
+* Евсей Илья - [Bombamio](https://github.com/Bombamio)
+* Дончев Юрий - [KaRaNDaIiIK](https://github.com/KaRaNDaIiIK)
+* Колесниченко Алексей - [AlekseyKolesnichenko](https://github.com/AlekseyKolesnichenko)
