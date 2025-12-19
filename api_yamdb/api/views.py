@@ -38,9 +38,8 @@ User = get_user_model()
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(
-        rating=Avg('reviews__score'),
-        order_by=['name'],
-    )
+        rating=Avg('reviews__score')
+    ).order_by('name')
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filterset_class = TitleFilter

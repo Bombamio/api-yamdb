@@ -191,7 +191,7 @@ class Command(BaseCommand):
         """Обработка связей через модель GenreTitle."""
 
         def process_row(row):
-            title_id = int(row['id'])
+            title_id = int(row['title_id'])
             genre_id = int(row['genre_id'])
 
             try:
