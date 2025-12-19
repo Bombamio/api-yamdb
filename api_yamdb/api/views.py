@@ -1,10 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-
 from django_filters.rest_framework import DjangoFilterBackend
-
-from rest_framework import filters, mixins, permissions, status, viewsets
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,6 +10,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Review, Title
 
+from .base_views import SlugBaseViewSet
 from .filters import TitleFilter
 from .permissions import (
     IsAdmin,
@@ -37,23 +36,10 @@ User = get_user_model()
 
 # Categories fields.
 
-class SlugBaseViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
-    """Базовый ViewSet для моделей со slug."""
-    permission_classes = (IsAdminOrReadOnly,)
-    lookup_field = 'slug'
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    http_method_names = ['get', 'post', 'delete', 'head', 'options']
-
-
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(
-        rating=Avg('reviews__score')
+        rating=Avg('reviews__score'),
+        order_by=['name'],
     )
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
@@ -127,7 +113,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 # Users fields.
 
 class UserViewSet(viewsets.ModelViewSet):
-    '''ViewSet для управления пользователями администратором.'''
+    """ViewSet для управления пользователями администратором."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
@@ -142,7 +128,7 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def me(self, request):
-        '''Эндпоинт для работы с собственным профилем.'''
+        """Эндпоинт для работы с собственным профилем."""
         if request.method == 'GET':
             serializer = self.get_serializer(request.user)
             return Response(serializer.data)
@@ -158,11 +144,11 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class SignUpView(APIView):
-    '''Регистрация пользователя с отправкой кода подтверждения.'''
+    """Регистрация пользователя с отправкой кода подтверждения."""
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        '''Обработка POST-запроса.'''
+        """Обработка POST-запроса."""
         serializer = UserSignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -170,11 +156,11 @@ class SignUpView(APIView):
 
 
 class TokenObtainView(APIView):
-    '''Получение JWT токена по коду подтверждения.'''
+    """Получение JWT токена по коду подтверждения."""
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        '''Обработка POST-запроса.'''
+        """Обработка POST-запроса."""
         serializer = TokenObtainSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 

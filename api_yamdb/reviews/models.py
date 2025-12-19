@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils.text import slugify
 
 from . import constants
-from .mixins import SlugAutoFillMixin
 from .validators import validate_year
 
 
@@ -12,8 +12,8 @@ User = get_user_model()
 
 # Categories fields.
 
-class AbstractBaseModel(SlugAutoFillMixin, models.Model):
-    """Абстрактная модель для Category и Genre."""
+class NamedSlugModel(models.Model):
+    """Абстрактная модель с полями name и slug, для Category и Genre."""
     name = models.CharField(
         "Название", max_length=constants.MAX_NAME_LENGTH, unique=True
     )
@@ -24,6 +24,19 @@ class AbstractBaseModel(SlugAutoFillMixin, models.Model):
         blank=True
     )
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+
+            # Используем self.__class__ чтобы работало для любых моделей
+            while self.__class__.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
     class Meta:
         abstract = True
         ordering = ['name']
@@ -32,18 +45,18 @@ class AbstractBaseModel(SlugAutoFillMixin, models.Model):
         return self.name
 
 
-class Category(AbstractBaseModel):
+class Category(NamedSlugModel):
     """Категории (типы) произведений («Фильмы», «Книги», «Музыка»)."""
 
-    class Meta:
+    class Meta(NamedSlugModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
-class Genre(AbstractBaseModel):
+class Genre(NamedSlugModel):
     """Жанры произведений."""
 
-    class Meta:
+    class Meta(NamedSlugModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -66,11 +79,11 @@ class Title(models.Model):
     name = models.CharField(
         "Название произведения", max_length=constants.MAX_NAME_LENGTH
     )
-    year = models.PositiveSmallIntegerField(
+    year = models.SmallIntegerField(
         "Год издания",
         validators=[validate_year]
     )
-    description = models.TextField("Описание", null=True, blank=True)
+    description = models.TextField("Описание", blank=True)
 
     class Meta:
         verbose_name = 'Произведение'

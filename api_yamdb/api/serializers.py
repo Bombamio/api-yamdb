@@ -3,13 +3,12 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-
 from rest_framework import serializers
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.validators import username_validator, validate_username
 
-from . import constants
+from reviews import constants
 
 
 User = get_user_model()
@@ -94,14 +93,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         request = self.context['request']
         title_id = self.context['view'].kwargs.get('title_id')
-        if request.method == 'POST':
-            if Review.objects.filter(
-                title_id=title_id,
-                author=request.user
-            ).exists():
-                raise serializers.ValidationError(
-                    'Вы уже оставили отзыв на это произведение.'
-                )
+        if request.method == 'POST' and Review.objects.filter(
+            title_id=title_id,
+            author=request.user
+        ).exists():
+            raise serializers.ValidationError(
+                'Вы уже оставили отзыв на это произведение.'
+            )
         return data
 
 
@@ -120,7 +118,7 @@ class CommentSerializer(serializers.ModelSerializer):
 # Users fields.
 
 class UserSerializer(serializers.ModelSerializer):
-    '''Сериализатор для модели User.'''
+    """Сериализатор для модели User."""
 
     class Meta:
         model = User
@@ -130,14 +128,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(UserSerializer):
-    '''Сериализатор для изменения профиля через /me/.'''
+    """Сериализатор для изменения профиля через /me/."""
 
     class Meta(UserSerializer.Meta):
         read_only_fields = ('role',)
 
 
 class UserSignUpSerializer(serializers.Serializer):
-    '''Сериализатор для регистрации пользователя.'''
+    """Сериализатор для регистрации пользователя."""
     email = serializers.EmailField(
         required=True,
         max_length=constants.MAX_EMAIL_LENGTH
@@ -148,16 +146,8 @@ class UserSignUpSerializer(serializers.Serializer):
         validators=[validate_username, username_validator],
     )
 
-    def validate_username(self, value):
-        '''Запрещает имя пользователя "me".'''
-        if value.lower() == 'me':
-            raise serializers.ValidationError(
-                'Имя пользователя "me" не разрешено'
-            )
-        return value
-
     def validate(self, data):
-        '''Проверяет уникальность email и username.'''
+        """Проверяет уникальность email и username."""
         email = data.get('email')
         username = data.get('username')
 
@@ -197,7 +187,7 @@ class UserSignUpSerializer(serializers.Serializer):
 
 
 class TokenObtainSerializer(serializers.Serializer):
-    '''Сериализатор для получения JWT токена.'''
+    """Сериализатор для получения JWT токена."""
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
 
